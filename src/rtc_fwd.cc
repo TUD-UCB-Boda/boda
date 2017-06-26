@@ -13,6 +13,7 @@
 #include"rtc_func_gen.H"
 #include"rtc_compute.H"
 #include"cnn_op.H"
+#include"auto_tuner.H"
 
 namespace boda 
 {
@@ -79,6 +80,7 @@ namespace boda
     map_str_float_t stats_map;
 
     p_rtc_compute_t rtc; //NESI(help="rtc back-end to use")
+    uint32_t autotune; //NESI(default=0,help="if 1, auto-tune the given CNN.")
 
     vect_rtc_fwd_func_call_t fwd_calls;
     void add_fwd_call( p_rcg_func_call_t const & rcg, string const & call_tag ) { 
@@ -476,6 +478,24 @@ namespace boda
     }
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       p_conv_op_t const & oi = must_find( *op_infos, i->first );
+      op_tune_t used_opt = op_tune; //variable that holds the best tuning parameters, initialized with default values
+
+      //integration of profiling and auto-tuning, we just tune convolution operations
+      if(autotune & (oi->is( Convolution_coi ) | oi->is( BckConv_coi ))) {
+        p_conv_node_t no = cp->must_get_node( oi->get_arg("out") ); // aka oi->coi->top_an(0) ...
+        bool const conv_has_relu = (no->in_place_ops.size() > 0) && (no->in_place_ops[0]->is(ReLU_coi));
+        // mark relu as fused-away; mark conv as having fused-on relu // NOTE/FIXME(?): relu may be not-init()-yet here ...
+        if( conv_has_relu ) {
+          must_find( *op_infos, no->in_place_ops[0]->tag )->set_u32( "fused", 1 );
+        }
+        p_conv_op_t op_copy = std::make_shared<conv_op_t>(*oi);
+        op_copy->set_u32( "conv_has_relu", conv_has_relu );
+        auto_tuner_t auto_tuner;
+        auto_tuner.init(); //initialization of search space
+        used_opt = auto_tuner.auto_tuning(nia, op_copy); //call auto_tuning to get best tuning parameters
+      }
+
+      //add codegen annotations for oi with best op_tune (used_opt) we've found
       add_cnn_codegen_annotations( oi.get(), op_tune, 0 );
     }
 
@@ -489,7 +509,7 @@ namespace boda
 	p_conv_node_t no = cp->must_get_node( oi->get_arg("out") ); // aka oi->coi->top_an(0) ...
 	bool const conv_has_relu = (no->in_place_ops.size() > 0) && (no->in_place_ops[0]->is(ReLU_coi));
 	// mark relu as fused-away; mark conv as having fused-on relu // NOTE/FIXME(?): relu may be not-init()-yet here ...
-	if( conv_has_relu ) { must_find( *op_infos, no->in_place_ops[0]->tag )->set_u32( "fused", 1 ); } 
+	if( conv_has_relu & !autotune) { must_find( *op_infos, no->in_place_ops[0]->tag )->set_u32( "fused", 1 ); }
 	oi->set_u32( "conv_has_relu", conv_has_relu );
 
 	if( oi->get_func_name() == k1conv_str ) { 

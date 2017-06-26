@@ -124,6 +124,7 @@ data-stream-file.o
 data-to-img.o
 data-stream.o
 raw-vid-disp.o SDL2
+auto_tuner.o
 op-tuner.o
 cnn_op.o
 culibs-wrap.o culibs

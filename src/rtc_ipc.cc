@@ -145,6 +145,10 @@ namespace boda
       init_done.v = 1;
     }
 
+    void get_device_info(long *mem_sz, long *wg_sz) {
+
+    }
+
     virtual string get_plat_tag( void ) {
       bwrite( *worker, string("get_plat_tag") ); 
       worker->flush();
