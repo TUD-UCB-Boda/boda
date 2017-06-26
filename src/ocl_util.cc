@@ -242,6 +242,15 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       init_done.v = 1;
     }
 
+    void get_device_info(long *mem_sz, long *wg_sz){
+      cl_ulong loc_mem_size;
+      size_t maxWorkGroupSz;
+      clGetDeviceInfo(use_devices[0], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(loc_mem_size), &loc_mem_size, NULL);
+      clGetDeviceInfo(use_devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSz), &maxWorkGroupSz, NULL);
+      *mem_sz = (long)loc_mem_size;
+      *wg_sz = (long)maxWorkGroupSz;
+    }
+
     virtual string get_plat_tag( void ) {
       assert_st( init_done.v );
       assert_st( use_devices.size() == 1 );
