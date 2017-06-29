@@ -134,57 +134,14 @@ namespace  boda{
     }
   }
 
-  void auto_tuner_t::init() {
-    op_tune_t kg_op_tune;
-
-    kg_op_tune.use_be = "ocl";
-    kg_op_tune.use_culibs = 0;
-
-    kg_op_tune.MNb.d[0] = 8;
-    kg_op_tune.MNb.d[1] = 16;
-    kg_op_tune.MNt.d[0] = 8;
-    kg_op_tune.MNt.d[1] = 8;
-
-    kg_op_tune.Kb = 8;
-    kg_op_tune.use_local_mem = 1;
-    kg_op_tune.prof_variant = 0;
-    kg_op_tune.vw = 8;
-
-    kg_op_tune.k1conv = 0;
-    kg_op_tune.tconv = 0;
-    kg_op_tune.tconv_max_ksz.d[0] = 11;
-    kg_op_tune.tconv_max_ksz.d[1] = 11;
-    kg_op_tune.ipconv = 0;
-
+  void auto_tuner_t::init(op_tune_t kg_op_tune_t_) {
+    kg_op_tune = kg_op_tune_t_;
     op_tunes.push_back(kg_op_tune);
-
-
     int mnb = 4;
-
     for(int i = 0; i < 4 ; i++){
-      op_tune_t test_op_tune;
-
-      test_op_tune.use_be = "ocl";
-      test_op_tune.use_culibs = 0;
-
+      op_tune_t test_op_tune = kg_op_tune_t_;
       test_op_tune.MNb.d[0] = mnb;
-      test_op_tune.MNb.d[1] = 8;
-      test_op_tune.MNt.d[0] = 4;
-      test_op_tune.MNt.d[1] = 8;
-
-      test_op_tune.Kb = 8;
-      test_op_tune.use_local_mem = 1;
-      test_op_tune.prof_variant = 0;
-      test_op_tune.vw = 8;
-
-      test_op_tune.k1conv = 0;
-      test_op_tune.tconv = 1;
-      test_op_tune.tconv_max_ksz.d[0] = 11;
-      test_op_tune.tconv_max_ksz.d[1] = 11;
-      test_op_tune.ipconv = 0;
-
       op_tunes.push_back(test_op_tune);
-
       mnb = mnb * 2;
     }
   }
@@ -194,14 +151,14 @@ namespace  boda{
     p_ostream wout = p_ostream();
     p_istream win;
 
-    //Currently only OpenCL support for auto-tuning
-    if( is_feature_enabled("opencl") ) {
-      ops_be_t ops_be{ "ocl", make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( "(be=ocl)" ), nia ) }; //FIXME: currently passing 0, but has to be NESI
-      must_insert( ops_bes, ops_be.rtcn, ops_be );
-    }
-    else {
-      rt_err( strprintf( "OpenCL feature not available\n"));
-    }
+    string rtc_be;
+    string rtc_name;
+    if( 0 ) { }
+    else if( is_feature_enabled("nvrtc") ) { rtc_be = "(be=nvrtc)"; rtc_name = "nvrtc"; }
+    else if( is_feature_enabled("opencl") ) { rtc_be = "(be=ocl)"; rtc_name = "ocl"; }
+    else { rt_err("rtc-fwd: can't find enabled choice for default backend. specify, or update defaults list ..."); }
+    ops_be_t ops_be{ rtc_name, make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia ) }; //FIXME: currently passing 0, but has to be NESI
+    must_insert( ops_bes, ops_be.rtcn, ops_be );
 
     // init backend
     bool const enable_prof = 0;
@@ -210,7 +167,9 @@ namespace  boda{
       ops_be.rtc->init();
       ops_be.codegen = make_shared<rtc_codegen_t>();
       ops_be.codegen->init( ops_be.rtc, make_cnn_custom_codegen_t(), compile_opts );
-      ops_be.rtc->get_device_info(&max_smem_sz, &max_wg_sz);
+      rtc_device_info_t dev_info = ops_be.rtc->get_device_info();
+      max_smem_sz = dev_info.mem_sz;
+      max_wg_sz = dev_info.wg_sz;
     }
 
     uint32_t num_mad_fail = 0;

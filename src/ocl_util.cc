@@ -112,7 +112,15 @@ namespace boda
     cl_err_chk( err, "clGet...Info(get_var_sized_thing)" );
     return ret;
   }
+  template< typename T, typename GI > T get_info_val( GI const & gi ) {
+    T ret; cl_int err;
+    err = gi( ret, &ret, 0 );
+    cl_err_chk( err, "clGet...Info(get_var_sized_thing)" );
+    return ret;
+  }
   template< typename GI > string get_info_str( GI const & gi ) { return get_info_vect< string, GI >( gi ); }
+  template< typename GI > cl_ulong get_info_cl_ulong( GI const & gi ) { return get_info_val< cl_ulong, GI >( gi ); }
+  template< typename GI > size_t get_info_size_t( GI const & gi ) { return get_info_val< size_t, GI >( gi ); }
 
   cl_ulong get_prof_info( cl_event_t const & event, cl_profiling_info const & pn ) {
     cl_ulong ret; cl_int err = clGetEventProfilingInfo( event.v, pn, sizeof(ret), &ret, 0 );
@@ -242,13 +250,15 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       init_done.v = 1;
     }
 
-    void get_device_info(long *mem_sz, long *wg_sz){
+    rtc_device_info_t get_device_info(void){
+      rtc_device_info_t dev_info;
       cl_ulong loc_mem_size;
       size_t maxWorkGroupSz;
-      clGetDeviceInfo(use_devices[0], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(loc_mem_size), &loc_mem_size, NULL);
-      clGetDeviceInfo(use_devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSz), &maxWorkGroupSz, NULL);
-      *mem_sz = (long)loc_mem_size;
-      *wg_sz = (long)maxWorkGroupSz;
+      loc_mem_size = get_info_cl_ulong(Device_t(use_devices[0], CL_DEVICE_LOCAL_MEM_SIZE));
+      maxWorkGroupSz = get_info_size_t(Device_t(use_devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE));
+      dev_info.mem_sz = (uint64_t)loc_mem_size;
+      dev_info.wg_sz = (uint64_t)maxWorkGroupSz;
+      return dev_info;
     }
 
     virtual string get_plat_tag( void ) {

@@ -59,10 +59,11 @@ struct auto_tuner_t : virtual public nesi // NESI(help="Tools for CNN autotuning
 
   rtc_compile_opts_t compile_opts; //default="()",help="runtime compilation options"
 
-  long max_smem_sz;
-  long max_wg_sz;
+  uint64_t max_smem_sz;
+  uint64_t max_wg_sz;
 
   std::vector<op_tune_t> op_tunes; //gets filled in init()
+  op_tune_t kg_op_tune; //(default="()",help="tuning parameters / options")
   double best_time;
   op_tune_t best_opt;
 
@@ -88,7 +89,7 @@ struct auto_tuner_t : virtual public nesi // NESI(help="Tools for CNN autotuning
     return must_find( ops_bes, op_tune.use_be ).codegen;
   }
 
-  void init();
+  void init(op_tune_t kg_op_tune_t_);
   op_tune_t auto_tuning(nesi_init_arg_t * nia, p_conv_op_base_t anno_op);
 };
 

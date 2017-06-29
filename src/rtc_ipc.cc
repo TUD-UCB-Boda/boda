@@ -55,7 +55,7 @@ namespace boda
     bread( in, o.nda_vals );
   }
 
-  template< typename STREAM > inline void bwrite( STREAM & out, rtc_func_info_t const & o ) { 
+  template< typename STREAM > inline void bwrite( STREAM & out, rtc_func_info_t const & o ) {
     bwrite( out, o.func_name );
     bwrite( out, o.func_src );
     bwrite( out, o.arg_names );
@@ -68,6 +68,10 @@ namespace boda
     bread( in, o.op );
   }
 
+  template< typename STREAM > inline void bread( STREAM & in, rtc_device_info_t & o ) {
+    bread( in, o.wg_sz );
+    bread( in, o.mem_sz );
+  }
   struct ipc_var_info_t {
     p_nda_t buf;
     dims_t dims;
@@ -145,8 +149,12 @@ namespace boda
       init_done.v = 1;
     }
 
-    void get_device_info(long *mem_sz, long *wg_sz) {
-
+    virtual rtc_device_info_t get_device_info(void) {
+      bwrite( *worker, string("get_device_info") );
+      worker->flush();
+      rtc_device_info_t dev_info;
+      bread( *worker, dev_info );
+      return dev_info;
     }
 
     virtual string get_plat_tag( void ) {
