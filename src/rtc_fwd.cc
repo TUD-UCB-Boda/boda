@@ -491,7 +491,7 @@ namespace boda
         p_conv_op_t op_copy = std::make_shared<conv_op_t>(*oi);
         op_copy->set_u32( "conv_has_relu", conv_has_relu );
         auto_tuner_t auto_tuner;
-        auto_tuner.init(); //initialization of search space
+        auto_tuner.init(op_tune); //initialization of search space
         used_opt = auto_tuner.auto_tuning(nia, op_copy); //call auto_tuning to get best tuning parameters
       }
 

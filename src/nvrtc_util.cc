@@ -204,14 +204,16 @@ float const FLT_MIN = 1.175494350822287507969e-38f;
       init_done.v = 1;
     }
 
-    void get_device_info(long *mem_sz, long *wg_sz) {
-      long mem_sz_;
-      long wg_sz_;
+    rtc_device_info_t get_device_info(void) {
+      rtc_device_info_t dev_info;
+      uint64_t mem_sz_;
+      uint64_t wg_sz_;
       assert_st( init_done.v );
       cu_err_chk(cuDeviceGetAttribute(&mem_sz_, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, cu_dev));
       cu_err_chk(cuDeviceGetAttribute(&wg_sz_, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cu_dev));
-      *mem_sz = mem_sz_;
-      *wg_sz = wg_sz_;
+      dev_info.mem_sz = mem_sz_;
+      dev_info.wg_sz = wg_sz_;
+      return dev_info;
     }
 
     virtual string get_plat_tag( void ) {
