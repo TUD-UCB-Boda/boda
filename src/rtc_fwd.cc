@@ -472,6 +472,20 @@ namespace boda
     cp = cp_;
     assert_st( cp );
 
+    string rtc_be;
+    if( !rtc ) {
+      // FIXME: this seems like it could be more general in a couple ways: first, we could use some NESI magic to look
+      // at the derived types of rtc_compute_t and pick one. second, maybe NESI could have some wholesale way of
+      // creating 'default' derived instances of some base type, based on some conditions (i.e. give me anything,
+      // anythign with a name like this, etc). but for now, let's not go down that hole.
+      if( 0 ) { }
+      else if( is_feature_enabled("nvrtc") ) { rtc_be = "(be=nvrtc)"; }
+      else if( is_feature_enabled("opencl") ) { rtc_be = "(be=ocl)"; }
+      else { rt_err("rtc-fwd: can't find enabled choice for default backend. specify, or update defaults list ..."); }
+      rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia );
+    }
+    rtc->init(); codegen.init( rtc, make_cnn_custom_codegen_t(), compile_opts );
+
     op_infos.reset( new map_str_p_conv_op_t ); // maybe we should have our own copy of cp, but instead we only copy convs
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       must_insert( *op_infos, i->first, make_shared< conv_op_t >( *i->second ) );
@@ -491,8 +505,8 @@ namespace boda
         p_conv_op_t op_copy = std::make_shared<conv_op_t>(*oi);
         op_copy->set_u32( "conv_has_relu", conv_has_relu );
         auto_tuner_t auto_tuner;
-        auto_tuner.init(op_tune); //initialization of search space
-        used_opt = auto_tuner.auto_tuning(nia, op_copy); //call auto_tuning to get best tuning parameters
+        auto_tuner.init(rtc_be, nia, op_tune); //initialization of search space
+        used_opt = auto_tuner.auto_tuning(op_copy); //call auto_tuning to get best tuning parameters
       }
 
       //add codegen annotations for oi with best op_tune (used_opt) we've found
@@ -524,19 +538,6 @@ namespace boda
 
       }
     }
-    if( !rtc ) { 
-      string rtc_be;
-      // FIXME: this seems like it could be more general in a couple ways: first, we could use some NESI magic to look
-      // at the derived types of rtc_compute_t and pick one. second, maybe NESI could have some wholesale way of
-      // creating 'default' derived instances of some base type, based on some conditions (i.e. give me anything,
-      // anythign with a name like this, etc). but for now, let's not go down that hole.
-      if( 0 ) { }
-      else if( is_feature_enabled("nvrtc") ) { rtc_be = "(be=nvrtc)"; }
-      else if( is_feature_enabled("opencl") ) { rtc_be = "(be=ocl)"; }
-      else { rt_err("rtc-fwd: can't find enabled choice for default backend. specify, or update defaults list ..."); }
-      rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia ); 
-    }
-    rtc->init(); codegen.init( rtc, make_cnn_custom_codegen_t(), compile_opts );
     cp->topo_visit_setup();
     for( set_string::const_iterator i = cp->bots.begin(); i != cp->bots.end(); ++i ) { gen_ops_rec( *i ); }
     //codegen.write_rtc_func_sigs( rtc_func_sigs_fn );

@@ -75,7 +75,8 @@ struct auto_tuner_t : virtual public nesi // NESI(help="Tools for CNN autotuning
   map_str_double func_mrd_toler; //default="()",help="per-function custom maximum maximum-absolute-differences over which a failure is declared (overrides mrd_toler per-function if specified"
   uint32_t max_err = 10; //default="10",help="print at most this many differing elems"
 
-  map_str_ops_be_t ops_bes;
+  p_rtc_compute_t rtc;
+  p_rtc_codegen_t codegen;
 
   string kg_tune_tag; //help="use the tune with this tag for writing known-good digests and as the lhs for full-data live comparisons agains all tunes (inclusing itself).", req=1
 
@@ -83,14 +84,8 @@ struct auto_tuner_t : virtual public nesi // NESI(help="Tools for CNN autotuning
 
   uint32_t write_runs = 0; //default="0",help="if non-zero, write run data in output wisdom. will merge into existing runs if present (overwriting duplicates). if zero, output wisdom will have no runs (perhaps only known-good digests)"
 
-  p_rtc_codegen_t & get_codegen_for_op_tune( op_tune_t const & op_tune ) {
-    assert_st( !ops_bes.empty() );
-    if( op_tune.use_be.empty() ) { return ops_bes.begin()->second.codegen; }
-    return must_find( ops_bes, op_tune.use_be ).codegen;
-  }
-
-  void init(op_tune_t kg_op_tune_t_);
-  op_tune_t auto_tuning(nesi_init_arg_t * nia, p_conv_op_base_t anno_op);
+  void init(string rtc_be, nesi_init_arg_t * nia, op_tune_t kg_op_tune_t_);
+  op_tune_t auto_tuning(p_conv_op_base_t anno_op);
 };
 
 p_rtc_compute_t make_p_rtc_compute_t_init_and_check_unused_from_lexp( p_lexp_t const & lexp, nesi_init_arg_t * const nia );
