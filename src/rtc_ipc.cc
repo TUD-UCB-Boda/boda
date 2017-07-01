@@ -68,6 +68,10 @@ namespace boda
     bread( in, o.op );
   }
 
+  template< typename STREAM > inline void bwrite( STREAM & out, rtc_device_info_t & o ) {
+    bwrite( out, o.wg_sz );
+    bwrite( out, o.mem_sz );
+  }
   template< typename STREAM > inline void bread( STREAM & in, rtc_device_info_t & o ) {
     bread( in, o.wg_sz );
     bread( in, o.mem_sz );
@@ -372,6 +376,11 @@ moskewcz@maaya:~/git_work/boda/run/tr4$ boda cs_test_worker --boda-parent-addr=f
 	if( 0 ) {} 
 	else if( cmd == "quit" ) { break; }
 	else if( cmd == "init" ) { rtc->init(); }
+    else if( cmd == "get_device_info") {
+      rtc_device_info_t dev_info = rtc->get_device_info();
+      bwrite(*parent, dev_info);
+      parent->flush();
+    }
 	else if( cmd == "get_plat_tag" ) { 
           string const ret = rtc->get_plat_tag();
 	  bwrite( *parent, ret ); parent->flush(); 

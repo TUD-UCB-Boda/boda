@@ -56,7 +56,7 @@ LDFLAGS := $(LDFLAGS) -Wl,-rpath,$(CUDA_LIB)
 [culibs needs=cuda]
 LDFLAGS := $(LDFLAGS) -lcublas -lcudnn
 
-[nvrtc needs=cuda disable]
+[nvrtc needs=cuda]
 LDFLAGS := $(LDFLAGS) -lnvrtc
 
 [opencl]
