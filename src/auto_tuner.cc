@@ -134,7 +134,17 @@ namespace  boda{
     }
   }
 
-  void auto_tuner_t::init(op_tune_t kg_op_tune_t_) {
+  void auto_tuner_t::init(string rtc_be, nesi_init_arg_t * nia, op_tune_t kg_op_tune_t_) {
+    rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia ); //FIXME: currently passing 0, but has to be NESI
+    rtc->init();
+    codegen = make_shared<rtc_codegen_t>();
+    codegen->init( rtc, make_cnn_custom_codegen_t(), compile_opts );
+    rtc_device_info_t dev_info = rtc->get_device_info();
+    max_smem_sz = dev_info.mem_sz;
+    max_wg_sz = dev_info.wg_sz;
+
+    bool const enable_prof = 0;
+
     kg_op_tune = kg_op_tune_t_;
     op_tunes.push_back(kg_op_tune);
     int mnb = 4;
@@ -146,31 +156,10 @@ namespace  boda{
     }
   }
 
-  op_tune_t auto_tuner_t::auto_tuning(nesi_init_arg_t * nia, p_conv_op_base_t anno_op) {
+  op_tune_t auto_tuner_t::auto_tuning(p_conv_op_base_t anno_op) {
     p_ostream out = p_ostream( &std::cout, null_deleter<std::ostream>() );
     p_ostream wout = p_ostream();
     p_istream win;
-
-    string rtc_be;
-    string rtc_name;
-    if( 0 ) { }
-    else if( is_feature_enabled("nvrtc") ) { rtc_be = "(be=nvrtc)"; rtc_name = "nvrtc"; }
-    else if( is_feature_enabled("opencl") ) { rtc_be = "(be=ocl)"; rtc_name = "ocl"; }
-    else { rt_err("rtc-fwd: can't find enabled choice for default backend. specify, or update defaults list ..."); }
-    ops_be_t ops_be{ rtc_name, make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia ) }; //FIXME: currently passing 0, but has to be NESI
-    must_insert( ops_bes, ops_be.rtcn, ops_be );
-
-    // init backend
-    bool const enable_prof = 0;
-    for( map_str_ops_be_t::iterator i = ops_bes.begin(); i != ops_bes.end(); ++i ) {
-      ops_be_t & ops_be = i->second;
-      ops_be.rtc->init();
-      ops_be.codegen = make_shared<rtc_codegen_t>();
-      ops_be.codegen->init( ops_be.rtc, make_cnn_custom_codegen_t(), compile_opts );
-      rtc_device_info_t dev_info = ops_be.rtc->get_device_info();
-      max_smem_sz = dev_info.mem_sz;
-      max_wg_sz = dev_info.wg_sz;
-    }
 
     uint32_t num_mad_fail = 0;
     uint32_t kg_wix = uint32_t_const_max;
@@ -188,7 +177,6 @@ namespace  boda{
       op_tune_t op_tune;
       op_tune = op_tunes.at(wix); //get op_tune from op_tunes we want to use
 
-      p_rtc_codegen_t const & codegen = get_codegen_for_op_tune( op_tune );
       string const plat_tag = codegen->rtc->get_plat_tag();
       p_map_str_p_nda_t vsi;
       prc_ret_t prc_ret{0,NAN};
@@ -276,18 +264,9 @@ namespace  boda{
       wout->flush();
     }
 
+    rtc->finish_and_sync();
 
-    for( map_str_ops_be_t::iterator i = ops_bes.begin(); i != ops_bes.end(); ++i ) {
-      ops_be_t & ops_be = i->second;
-      ops_be.rtc->finish_and_sync();
-    }
-
-    if( !num_mad_fail ) {
-      (*out) << strprintf( "***ALL IS WELL***\n" );
-    }
-    else {
-      (*out) << strprintf( "***MAD FAILS*** num_mad_fail=%s\n", str(num_mad_fail).c_str() );
-    }
+    assert_st(!num_mad_fail);
 
     return best_opt;
   }

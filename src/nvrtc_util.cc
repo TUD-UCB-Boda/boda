@@ -191,13 +191,15 @@ float const FLT_MIN = 1.175494350822287507969e-38f;
 
     rtc_device_info_t get_device_info(void) {
       rtc_device_info_t dev_info;
-      uint64_t mem_sz_;
-      uint64_t wg_sz_;
+      int mem_sz_;
+      int wg_sz_;
       assert_st( init_done.v );
       cu_err_chk(cuDeviceGetAttribute(&mem_sz_, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, cu_dev));
       cu_err_chk(cuDeviceGetAttribute(&wg_sz_, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cu_dev));
-      dev_info.mem_sz = mem_sz_;
-      dev_info.wg_sz = wg_sz_;
+      assert_st(mem_sz_ > 0);
+      assert_st(wg_sz_ > 0);
+      dev_info.mem_sz = (uint64_t)mem_sz_;
+      dev_info.wg_sz = (uint64_t)wg_sz_;
       return dev_info;
     }
 
