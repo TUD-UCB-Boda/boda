@@ -27,6 +27,12 @@ namespace boda
     vect_string arg_names;
     op_base_t op;
   };
+
+  struct rtc_device_info_t {
+    uint64_t mem_sz;
+    uint64_t wg_sz;
+  };
+
   typedef vector< rtc_func_info_t > vect_rtc_func_info_t; 
   std::ostream & operator << ( std::ostream & out, rtc_func_info_t const & o );
 
@@ -44,6 +50,7 @@ namespace boda
 
     virtual void init( void ) = 0;
     virtual string get_plat_tag( void ) = 0;
+    virtual rtc_device_info_t get_device_info(void) = 0;
 
     virtual void create_var_with_dims( string const & vn, dims_t const & dims ) = 0;
     virtual void create_var_with_dims_as_reshaped_view_of_var( string const & vn, dims_t const & dims, string const & src_vn ) = 0; // note: will point to (and share as a peer) the data of existing var named by src_vn
