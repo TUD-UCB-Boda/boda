@@ -3,7 +3,8 @@
 #include"CL/cl.h"
 #include<stdio.h>
 #include"gbt_tile.H"
-#include "auto_tuner.H"
+#include"auto_tuner.H"
+#include"constraint_solver.H"
 
 namespace  boda{
   void run_xpose( p_op_base_t const & anno_op, rtc_codegen_t & codegen, string const & xpose_func_name,
@@ -139,24 +140,25 @@ namespace  boda{
     rtc->init();
     codegen = make_shared<rtc_codegen_t>();
     codegen->init( rtc, make_cnn_custom_codegen_t(), compile_opts );
-    rtc_device_info_t dev_info = rtc->get_device_info();
-    max_smem_sz = dev_info.mem_sz;
-    max_wg_sz = dev_info.wg_sz;
+    dev_info = rtc->get_device_info();
 
     bool const enable_prof = 0;
 
-    kg_op_tune = kg_op_tune_t_;
-    op_tunes.push_back(kg_op_tune);
-    int mnb = 4;
-    for(int i = 0; i < 4 ; i++){
-      op_tune_t test_op_tune = kg_op_tune_t_;
-      test_op_tune.MNb.d[0] = mnb;
-      op_tunes.push_back(test_op_tune);
-      mnb = mnb * 2;
-    }
+    op_tunes.push_back(kg_op_tune_t_);
   }
 
   op_tune_t auto_tuner_t::auto_tuning(p_conv_op_base_t anno_op) {
+    //set up search space for tuning parameters
+    dims_t in_dims = anno_op->get_dims("in");
+    uint32_t in_x = (in_dims.get_dim_by_name("x"))->sz;
+    uint32_t in_y = (in_dims.get_dim_by_name("y"))->sz;
+    convolution_solver_t conv_solver = convolution_solver_t(dev_info.wg_sz, in_x * in_y);
+    search_space space = conv_solver.get_conv_search_space();
+      op_tunes.insert(op_tunes.end(), space.begin(), space.end());
+
+      printf("Tuning operation with search space size %d\n", op_tunes.size());
+      int comp_errs = 0;
+
     p_ostream out = p_ostream( &std::cout, null_deleter<std::ostream>() );
     p_ostream wout = p_ostream();
     p_istream win;
@@ -197,9 +199,13 @@ namespace  boda{
         vsi = make_shared<map_str_p_nda_t>();
         try {
           prc_ret = profile_rcg_call( op_copy, *codegen, gen_data, vsi.get(), run_iter, 0 );
-          //printf("%f\n",prc_ret.rt_secs);
           //saving best time and op_tune
-          if(wix == 0){
+            if( !err.str().empty() ) {
+                std::cout << "\t--  comp fail for op_tune='" + str(op_tune) + "'\n\t" << err.str() << "\n" << err_extra.str();
+                comp_errs++;
+            }
+          else if(wix == 0){
+              printf("\t%s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
@@ -242,12 +248,10 @@ namespace  boda{
           comp_vars( &err, num_mad_fail, vmt, 0, 0, max_err, vns_kg, vs_kg, vsi );
         }
       }
-
-      if( !err.str().empty() ) {
-        on_op_err( *out, op_seen_errs, 0, op_wisdom_out->op );
-        (*out) << "--  comp fail for op_tune='" + str(op_tune) + "'\n" << err.str() << "\n" << err_extra.str();
-      }
     }
+
+      printf("\ttotal errors: %d\n", comp_errs);
+      printf("\t%s %f\n\n", str(best_opt).c_str(), best_time);
 
     out->flush();
 

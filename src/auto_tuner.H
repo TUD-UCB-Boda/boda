@@ -59,8 +59,7 @@ struct auto_tuner_t : virtual public nesi // NESI(help="Tools for CNN autotuning
 
   rtc_compile_opts_t compile_opts; //default="()",help="runtime compilation options"
 
-  uint64_t max_smem_sz;
-  uint64_t max_wg_sz;
+  rtc_device_info_t dev_info;
 
   std::vector<op_tune_t> op_tunes; //gets filled in init()
   op_tune_t kg_op_tune; //(default="()",help="tuning parameters / options")
