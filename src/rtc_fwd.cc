@@ -510,7 +510,7 @@ namespace boda
       }
 
       //add codegen annotations for oi with best op_tune (used_opt) we've found
-      add_cnn_codegen_annotations( oi.get(), op_tune, 0 );
+      add_cnn_codegen_annotations( oi.get(), used_opt, 0 );
     }
 
     // these parts might go in init, but they need to know about the overall graph of operations. so we'll call these a
