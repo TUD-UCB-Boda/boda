@@ -154,10 +154,10 @@ namespace  boda{
     uint32_t in_y = (in_dims.get_dim_by_name("y"))->sz;
     convolution_solver_t conv_solver = convolution_solver_t(dev_info.wg_sz, in_x * in_y);
     search_space space = conv_solver.get_conv_search_space();
-      op_tunes.insert(op_tunes.end(), space.begin(), space.end());
+    op_tunes.insert(op_tunes.end(), space.begin(), space.end());
 
-      printf("Tuning operation with search space size %d\n", op_tunes.size());
-      int comp_errs = 0;
+    printf("Tuning operation with search space size %d\n", op_tunes.size());
+    int comp_errs = 0;
 
     p_ostream out = p_ostream( &std::cout, null_deleter<std::ostream>() );
     p_ostream wout = p_ostream();
@@ -189,7 +189,7 @@ namespace  boda{
         add_cnn_codegen_annotations(op_copy.get(), op_tune, 0);
       }
       catch( unsup_exception const & us_exp ) {
-        err << string("annotation failure: ") + us_exp.what();
+        std::cout << string("annotation failure: ") + us_exp.what();
       }
 
       if( err.str().empty() ) {
@@ -200,16 +200,13 @@ namespace  boda{
         try {
           prc_ret = profile_rcg_call( op_copy, *codegen, gen_data, vsi.get(), run_iter, 0 );
           //saving best time and op_tune
-            if( !err.str().empty() ) {
-                std::cout << "\t--  comp fail for op_tune='" + str(op_tune) + "'\n\t" << err.str() << "\n" << err_extra.str();
-                comp_errs++;
-            }
-          else if(wix == 0){
-              printf("\t%s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
+          if(wix == 0){
+            printf("\tknown good %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
           else if(prc_ret.rt_secs < best_time){
+            printf("\tfound better %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
@@ -248,10 +245,15 @@ namespace  boda{
           comp_vars( &err, num_mad_fail, vmt, 0, 0, max_err, vns_kg, vs_kg, vsi );
         }
       }
+
+      if( !err.str().empty() ) {
+        std::cout << "\t--  comp fail for op_tune='" + str(op_tune) + "'\n\t" << err.str() << "\n" << err_extra.str();
+        comp_errs++;
+      }
     }
 
-      printf("\ttotal errors: %d\n", comp_errs);
-      printf("\t%s %f\n\n", str(best_opt).c_str(), best_time);
+    printf("\ttotal errors: %d\n", comp_errs);
+    printf("\tbest parameters: %s %f\n\n", str(best_opt).c_str(), best_time);
 
     out->flush();
 
