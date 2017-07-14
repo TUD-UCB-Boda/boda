@@ -247,7 +247,7 @@ namespace  boda{
       }
 
       if( !err.str().empty() ) {
-        std::cout << "\t--  comp fail for op_tune='" + str(op_tune) + "'\n\t" << err.str() << "\n" << err_extra.str();
+//        std::cout << "\t--  comp fail for op_tune='" + str(op_tune) + "'\n\t" << err.str() << "\n" << err_extra.str();
         comp_errs++;
       }
     }
