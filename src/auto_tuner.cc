@@ -156,7 +156,7 @@ namespace  boda{
     search_space space = conv_solver.get_conv_search_space();
     op_tunes.insert(op_tunes.end(), space.begin(), space.end());
 
-    printf("Tuning operation with search space size %d\n", op_tunes.size());
+//    printf("Tuning operation with search space size %d\n", op_tunes.size());
     int comp_errs = 0;
 
     p_ostream out = p_ostream( &std::cout, null_deleter<std::ostream>() );
@@ -201,12 +201,12 @@ namespace  boda{
           prc_ret = profile_rcg_call( op_copy, *codegen, gen_data, vsi.get(), run_iter, 0 );
           //saving best time and op_tune
           if(wix == 0){
-            printf("\tknown good %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
+//            printf("\tknown good %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
           else if(prc_ret.rt_secs < best_time){
-            printf("\tfound better %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
+//            printf("\tfound better %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
@@ -252,8 +252,8 @@ namespace  boda{
       }
     }
 
-    printf("\ttotal errors: %d\n", comp_errs);
-    printf("\tbest parameters: %s %f\n\n", str(best_opt).c_str(), best_time);
+//    printf("\ttotal errors: %d\n", comp_errs);
+//    printf("\tbest parameters: %s %f\n\n", str(best_opt).c_str(), best_time);
 
     out->flush();
 
