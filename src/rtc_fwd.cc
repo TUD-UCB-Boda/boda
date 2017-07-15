@@ -80,7 +80,8 @@ namespace boda
     map_str_float_t stats_map;
 
     p_rtc_compute_t rtc; //NESI(help="rtc back-end to use")
-    uint32_t autotune; //NESI(default=0,help="if 1, auto-tune the given CNN.")
+    uint32_t autotune; //NESI(default=0,help="if 1, auto-tune the given CNN")
+      uint32_t print_tune; //NESI(default=0,help="if 1, print tuning information")
 
     vect_rtc_fwd_func_call_t fwd_calls;
     void add_fwd_call( p_rcg_func_call_t const & rcg, string const & call_tag ) { 
@@ -506,7 +507,7 @@ namespace boda
         op_copy->set_u32( "conv_has_relu", conv_has_relu );
         auto_tuner_t auto_tuner;
         auto_tuner.init(rtc_be, nia, op_tune); //initialization of search space
-        used_opt = auto_tuner.auto_tuning(op_copy); //call auto_tuning to get best tuning parameters
+        used_opt = auto_tuner.auto_tuning(op_copy, print_tune); //call auto_tuning to get best tuning parameters
       }
 
       //add codegen annotations for oi with best op_tune (used_opt) we've found

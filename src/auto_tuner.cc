@@ -5,6 +5,7 @@
 #include"gbt_tile.H"
 #include"auto_tuner.H"
 #include"constraint_solver.H"
+#include<sstream>
 
 namespace  boda{
   void run_xpose( p_op_base_t const & anno_op, rtc_codegen_t & codegen, string const & xpose_func_name,
@@ -147,7 +148,7 @@ namespace  boda{
     op_tunes.push_back(kg_op_tune_t_);
   }
 
-  op_tune_t auto_tuner_t::auto_tuning(p_conv_op_base_t anno_op) {
+  op_tune_t auto_tuner_t::auto_tuning(p_conv_op_base_t anno_op, uint32_t print) {
     //set up search space for tuning parameters
     dims_t in_dims = anno_op->get_dims("in");
     uint32_t in_x = (in_dims.get_dim_by_name("x"))->sz;
@@ -172,6 +173,7 @@ namespace  boda{
     p_op_wisdom_t op_wisdom_out = make_shared< op_wisdom_t >();
 
     p_map_str_p_nda_t vs_kg; // we compare all runs against the known-good run, whose results will be stored here
+    std::ostringstream tuning_info;
 
     //profile each tuning parameter option we want to try, runs 2 times, one for known good and one for test_op_tune
     for( int wix = 0; wix < op_tunes.size(); ++wix ) { //FIXME: pass multiple op_tunes instead of just one
@@ -202,6 +204,7 @@ namespace  boda{
           //saving best time and op_tune
           if(wix == 0){
 //            printf("\tknown good %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
+            tuning_info << "\tknown good" << str(op_tune).c_str() << " " << prc_ret.rt_secs << "\n";
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
@@ -253,7 +256,11 @@ namespace  boda{
     }
 
 //    printf("\ttotal errors: %d\n", comp_errs);
+    tuning_info << "\tbest parameters: " << str(best_opt).c_str() << " " << best_time << "\n\n";
 //    printf("\tbest parameters: %s %f\n\n", str(best_opt).c_str(), best_time);
+    if(print) {
+      std::cout << tuning_info.str();
+    }
 
     out->flush();
 
