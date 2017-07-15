@@ -83,7 +83,7 @@ struct auto_tuner_t : virtual public nesi // NESI(help="Tools for CNN autotuning
   uint32_t write_runs = 0; //default="0",help="if non-zero, write run data in output wisdom. will merge into existing runs if present (overwriting duplicates). if zero, output wisdom will have no runs (perhaps only known-good digests)"
 
   void init(string rtc_be, nesi_init_arg_t * nia, op_tune_t kg_op_tune_t_);
-  op_tune_t auto_tuning(p_conv_op_base_t anno_op);
+  op_tune_t auto_tuning(p_conv_op_base_t anno_op, uint32_t print);
 };
 
 p_rtc_compute_t make_p_rtc_compute_t_init_and_check_unused_from_lexp( p_lexp_t const & lexp, nesi_init_arg_t * const nia );
