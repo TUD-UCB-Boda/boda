@@ -85,7 +85,8 @@ namespace boda
     u32_pt_t in_pad( void ) const { return get_xy_dims_strict( get_dims( "in_pad" ) ); }
     u32_pt_t kern_sz( void ) const { return get_xy_dims_strict( get_dims( "kern_sz" ) ); }
     u32_pt_t stride( void ) const { return get_xy_dims_strict( get_dims( "stride" ) ); }
-    // FIXME: these fields are only used codegen, so maybe they don't belong here?
+      std::ostringstream get_conv_dims_info();
+      // FIXME: these fields are only used codegen, so maybe they don't belong here?
   };
   typedef shared_ptr< conv_op_base_t > p_conv_op_base_t;
 
