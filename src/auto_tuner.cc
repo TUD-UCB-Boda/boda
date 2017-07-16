@@ -5,7 +5,6 @@
 #include"gbt_tile.H"
 #include"auto_tuner.H"
 #include"constraint_solver.H"
-#include<sstream>
 
 namespace  boda{
   void run_xpose( p_op_base_t const & anno_op, rtc_codegen_t & codegen, string const & xpose_func_name,
@@ -157,7 +156,6 @@ namespace  boda{
     search_space space = conv_solver.get_conv_search_space();
     op_tunes.insert(op_tunes.end(), space.begin(), space.end());
 
-//    printf("Tuning operation with search space size %d\n", op_tunes.size());
     int comp_errs = 0;
 
     p_ostream out = p_ostream( &std::cout, null_deleter<std::ostream>() );
@@ -203,13 +201,11 @@ namespace  boda{
           prc_ret = profile_rcg_call( op_copy, *codegen, gen_data, vsi.get(), run_iter, 0 );
           //saving best time and op_tune
           if(wix == 0){
-//            printf("\tknown good %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
-            tuning_info << "\tknown good" << str(op_tune).c_str() << " " << prc_ret.rt_secs << "\n";
+            tuning_info << "\tbaseline: " << prc_ret.rt_secs << "\n";
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
           else if(prc_ret.rt_secs < best_time){
-//            printf("\tfound better %s %f\n", str(op_tune).c_str(), prc_ret.rt_secs);
             best_time = prc_ret.rt_secs;
             best_opt = op_tune;
           }
@@ -250,16 +246,14 @@ namespace  boda{
       }
 
       if( !err.str().empty() ) {
-//        std::cout << "\t--  comp fail for op_tune='" + str(op_tune) + "'\n\t" << err.str() << "\n" << err_extra.str();
         comp_errs++;
       }
     }
 
-//    printf("\ttotal errors: %d\n", comp_errs);
-    tuning_info << "\tbest parameters: " << str(best_opt).c_str() << " " << best_time << "\n\n";
-//    printf("\tbest parameters: %s %f\n\n", str(best_opt).c_str(), best_time);
     if(print) {
-      std::cout << tuning_info.str();
+      tuning_info << "\tbest parameters: " << str(best_opt).c_str() << " " << best_time << "\n";
+      tuning_info << "\tsearch space size: " << op_tunes.size() << ", errors: " << comp_errs << "\n";
+      std::cout << tuning_info.str() << (anno_op->get_conv_dims_info()).str() << "\n";
     }
 
     out->flush();
