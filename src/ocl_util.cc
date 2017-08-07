@@ -231,8 +231,9 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       for( vect_cl_platform_id::const_iterator i = platforms.begin(); i != platforms.end(); ++i ) {
 	vect_cl_device_id devices;
 	cl_get_devices( devices, *i, CL_DEVICE_TYPE_GPU );
-	if( !devices.empty() ) { use_devices = vect_cl_device_id{devices[0]}; } // pick first device only (arbitrarily)
+	if( !devices.empty() ) { use_devices = vect_cl_device_id{devices}; } // pick first device only (arbitrarily)
       }
+      printf("\n\nFound %d devices\n\n", use_devices.size());
       if( use_devices.empty() ) { rt_err( "no OpenCL platform had any GPUs (devices of type CL_DEVICE_TYPE_GPU)" ); }
       cl_int err = CL_SUCCESS;  
       context.reset( clCreateContext( 0, use_devices.size(), &use_devices[0], 0, 0, &err ) );
