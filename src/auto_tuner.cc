@@ -281,13 +281,12 @@ namespace  boda{
   struct auto_tuner_tester_t : virtual public nesi, public has_main_t // NESI(help="get OpenCL/CUDA device informations",
     // bases=["has_main_t"], type_id="device_information" )
   {
-      p_rtc_compute_t rtc;
       rtc_device_info_t dev_info;
+      p_rtc_compute_t rtc; //NESI(default="(be=ocl, use_device_no=0)",help="rtc back-end to use")
 
     virtual cinfo_t const * get_cinfo( void ) const; // required declaration for NESI support
 
     virtual void main(nesi_init_arg_t * nia) {
-      rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( "(be=ocl)" ), nia );
       rtc->init();
 
       dev_info = rtc->get_device_info();
