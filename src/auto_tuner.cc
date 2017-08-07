@@ -291,6 +291,7 @@ namespace  boda{
       rtc->init();
 
       dev_info = rtc->get_device_info();
+      printf("%s %d %d\n", dev_info.device_name.c_str(), dev_info.wg_sz, dev_info.mem_sz);
     }
   };
 
