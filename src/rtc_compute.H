@@ -45,7 +45,7 @@ namespace boda
     string be; //NESI(help="name of back-end to use for rtc",req=1)
     uint32_t gen_src; //NESI(default=0,help="if 1, output generated src files just before compilation")
     filename_t gen_src_output_dir; //NESI(default="%(boda_output_dir)/rtc-gen-src", help="if requested, directory where generated source files will be placed")
-    uint32_t use_device_no; //NESI(default=0,help="number of OpenCL device to use")
+    uint32_t use_device_no; //NESI(default=0,help="device number of OpenCL device to use")
 
     string rtc_base_decls;
     string const & get_rtc_base_decls( void ); // note: caches results in rtc_base_decls
