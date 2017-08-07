@@ -236,11 +236,11 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       printf("\n\nFound %d devices\n\n", use_devices.size());
       if( use_devices.empty() ) { rt_err( "no OpenCL platform had any GPUs (devices of type CL_DEVICE_TYPE_GPU)" ); }
       cl_int err = CL_SUCCESS;  
-      context.reset( clCreateContext( 0, use_devices.size(), &use_devices[0], 0, 0, &err ) );
+      context.reset( clCreateContext( 0, use_devices.size(), &use_devices[use_device_no], 0, 0, &err ) );
       cl_err_chk( err, "clCreateContext()" );
       // note: after this, we're only using the first device in use_devices, although our context is for all of
       // them. this is arguably not the most sensible thing to do in general.
-      cq.reset( clCreateCommandQueue( context.v, use_devices[0], CL_QUEUE_PROFILING_ENABLE, &err ) ); // note: not out of order
+      cq.reset( clCreateCommandQueue( context.v, use_devices[use_device_no], CL_QUEUE_PROFILING_ENABLE, &err ) ); // note: not out of order
       cl_err_chk( err, "cl::CommandQueue()" );
       init_done.v = 1;
     }
@@ -249,19 +249,22 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       rtc_device_info_t dev_info;
       cl_ulong loc_mem_size;
       size_t maxWorkGroupSz;
-      loc_mem_size = get_info_cl_ulong(Device_t(use_devices[0], CL_DEVICE_LOCAL_MEM_SIZE));
-      maxWorkGroupSz = get_info_size_t(Device_t(use_devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE));
+      string device_name;
+      device_name = get_info_str(Device_t(use_devices[use_device_no],CL_DEVICE_NAME));
+      loc_mem_size = get_info_cl_ulong(Device_t(use_devices[use_device_no], CL_DEVICE_LOCAL_MEM_SIZE));
+      maxWorkGroupSz = get_info_size_t(Device_t(use_devices[use_device_no], CL_DEVICE_MAX_WORK_GROUP_SIZE));
       assert_st(loc_mem_size > 0);
       assert_st(maxWorkGroupSz > 0);
       dev_info.mem_sz = (uint64_t)loc_mem_size;
       dev_info.wg_sz = (uint64_t)maxWorkGroupSz;
+      dev_info.device_name = device_name;
       return dev_info;
     }
 
     virtual string get_plat_tag( void ) {
       assert_st( init_done.v );
       assert_st( use_devices.size() == 1 );
-      return "ocl:" + string(get_info_str(Device_t(use_devices[0],CL_DEVICE_NAME)).c_str()); // FIXME: check-for and strip NULL earlier?
+      return "ocl:" + string(get_info_str(Device_t(use_devices[use_device_no],CL_DEVICE_NAME)).c_str()); // FIXME: check-for and strip NULL earlier?
     }
 
     // note: post-compilation, MUST be called exactly once on all functions that will later be run()
@@ -295,7 +298,7 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       cl_program_t prog;
       prog.reset( clCreateProgramWithSource( context.v, srcs.size(), &srcs[0], 0, &err ) );
       cl_err_chk( err, "clCreateProgramWithSource" );
-      err = clBuildProgram( prog.v, use_devices.size(), &use_devices[0], "-cl-fast-relaxed-math -cl-denorms-are-zero", 0, 0 );
+      err = clBuildProgram( prog.v, use_devices.size(), &use_devices[use_device_no], "-cl-fast-relaxed-math -cl-denorms-are-zero", 0, 0 );
       try {  cl_err_chk_build( err, prog.v, use_devices ); }
       catch( rt_exception const & rte ) {
         if( rte.what_and_stacktrace().find( "CL_OUT_OF_HOST_MEMORY" ) != string::npos ) { 
@@ -433,7 +436,7 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       uint32_t const call_id = alloc_call_id();
       size_t const glob_work_sz = rfc.tpb.v*rfc.blks.v;
       size_t const loc_work_sz = rfc.tpb.v;
-      size_t const kwgs = get_info<size_t>(KernelWorkGroup_t(ofi.kern.v,use_devices[0],CL_KERNEL_WORK_GROUP_SIZE));
+      size_t const kwgs = get_info<size_t>(KernelWorkGroup_t(ofi.kern.v,use_devices[use_device_no],CL_KERNEL_WORK_GROUP_SIZE));
       // printf( "kwgs=%s\n", str(kwgs).c_str() ); // might be handy to see; might indicate occupancy limits for kernel
       if( loc_work_sz > kwgs ) {
         unsup_err( strprintf( "Can't run kernel: loc_work_sz is %s but OpenCL says max is %s for this kernel+device.", 
