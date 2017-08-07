@@ -278,17 +278,19 @@ namespace  boda{
     return best_opt;
   }
 
-  struct auto_tuner_tester_t : virtual public nesi, public has_main_t // NESI(help="test basic usage of auto-tuner",
-    // bases=["has_main_t"], type_id="auto-tune" )
+  struct auto_tuner_tester_t : virtual public nesi, public has_main_t // NESI(help="get OpenCL/CUDA device informations",
+    // bases=["has_main_t"], type_id="device_information" )
   {
-    //device information used for search space
-    long max_wg_sz;
-    long max_loc_mem_sz;
+      p_rtc_compute_t rtc;
+      rtc_device_info_t dev_info;
 
     virtual cinfo_t const * get_cinfo( void ) const; // required declaration for NESI support
 
     virtual void main(nesi_init_arg_t * nia) {
+      rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( "(be=ocl)" ), nia );
+      rtc->init();
 
+      dev_info = rtc->get_device_info();
     }
   };
 
