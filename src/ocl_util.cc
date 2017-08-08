@@ -262,7 +262,7 @@ __constant uint32_t const U32_MAX = 0xffffffff;
 
     virtual string get_plat_tag( void ) {
       assert_st( init_done.v );
-      assert_st( use_devices.size() == 1 );
+      assert_st( use_devices.size() >= 1 );
       return "ocl:" + string(get_info_str(Device_t(use_devices[use_device_no],CL_DEVICE_NAME)).c_str()); // FIXME: check-for and strip NULL earlier?
     }
 
