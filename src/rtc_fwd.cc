@@ -79,7 +79,7 @@ namespace boda
     vect_string stats_names;
     map_str_float_t stats_map;
 
-    p_rtc_compute_t rtc; //NESI(default="(be=ocl, use_device_no=0)",help="rtc back-end to use")
+    p_rtc_compute_t rtc; //NESI(help="rtc back-end to use")
     uint32_t autotune; //NESI(default=0,help="if 1, auto-tune the given CNN")
       uint32_t print_tune; //NESI(default=0,help="if 1, print tuning information")
 
@@ -483,7 +483,7 @@ namespace boda
       else if( is_feature_enabled("nvrtc") ) { rtc_be = "(be=nvrtc)"; }
       else if( is_feature_enabled("opencl") ) { rtc_be = "(be=ocl)"; }
       else { rt_err("rtc-fwd: can't find enabled choice for default backend. specify, or update defaults list ..."); }
-      //rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia );
+      rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia );
     }
     rtc->init(); codegen.init( rtc, make_cnn_custom_codegen_t(), compile_opts );
 
