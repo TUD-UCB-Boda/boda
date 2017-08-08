@@ -235,7 +235,7 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       }
       if( use_devices.empty() ) { rt_err( "no OpenCL platform had any GPUs (devices of type CL_DEVICE_TYPE_GPU)" ); }
       cl_int err = CL_SUCCESS;  
-      context.reset( clCreateContext( 0, 1, &use_devices[use_device_no], 0, 0, &err ) );
+      context.reset( clCreateContext( 0, use_devices.size(), &use_devices[use_device_no], 0, 0, &err ) );
       cl_err_chk( err, "clCreateContext()" );
       // note: after this, we're only using the first device in use_devices, although our context is for all of
       // them. this is arguably not the most sensible thing to do in general.
