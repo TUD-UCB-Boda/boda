@@ -79,7 +79,7 @@ namespace boda
     vect_string stats_names;
     map_str_float_t stats_map;
 
-    p_rtc_compute_t rtc; //NESI(help="rtc back-end to use")
+    p_rtc_compute_t rtc; //NESI(default="(be=ocl, use_device_no=0)",help="rtc back-end to use")
     uint32_t autotune; //NESI(default=0,help="if 1, auto-tune the given CNN")
       uint32_t print_tune; //NESI(default=0,help="if 1, print tuning information")
 
@@ -483,7 +483,7 @@ namespace boda
       else if( is_feature_enabled("nvrtc") ) { rtc_be = "(be=nvrtc)"; }
       else if( is_feature_enabled("opencl") ) { rtc_be = "(be=ocl)"; }
       else { rt_err("rtc-fwd: can't find enabled choice for default backend. specify, or update defaults list ..."); }
-      rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia );
+      //rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia );
     }
     rtc->init(); codegen.init( rtc, make_cnn_custom_codegen_t(), compile_opts );
 
@@ -491,6 +491,13 @@ namespace boda
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       must_insert( *op_infos, i->first, make_shared< conv_op_t >( *i->second ) );
     }
+
+    auto_tuner_t auto_tuner;
+    if(autotune){
+      p_rtc_codegen_t codegen_ = std::make_shared<rtc_codegen_t>(codegen);
+      auto_tuner.init(rtc, codegen_, op_tune); //initialization of search space
+    }
+
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       p_conv_op_t const & oi = must_find( *op_infos, i->first );
       op_tune_t used_opt = op_tune; //variable that holds the best tuning parameters, initialized with default values
@@ -505,8 +512,6 @@ namespace boda
         }
         p_conv_op_t op_copy = std::make_shared<conv_op_t>(*oi);
         op_copy->set_u32( "conv_has_relu", conv_has_relu );
-        auto_tuner_t auto_tuner;
-        auto_tuner.init(rtc_be, nia, op_tune); //initialization of search space
         used_opt = auto_tuner.auto_tuning(op_copy, print_tune); //call auto_tuning to get best tuning parameters
       }
 

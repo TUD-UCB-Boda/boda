@@ -135,11 +135,9 @@ namespace  boda{
     }
   }
 
-  void auto_tuner_t::init(string rtc_be, nesi_init_arg_t * nia, op_tune_t kg_op_tune_t_) {
-    rtc = make_p_rtc_compute_t_init_and_check_unused_from_lexp( parse_lexp( rtc_be ), nia ); //FIXME: currently passing 0, but has to be NESI
-    rtc->init();
-    codegen = make_shared<rtc_codegen_t>();
-    codegen->init( rtc, make_cnn_custom_codegen_t(), compile_opts );
+  void auto_tuner_t::init(p_rtc_compute_t rtc_, p_rtc_codegen_t codegen_, op_tune_t kg_op_tune_t_) {
+    rtc = rtc_;
+    codegen = codegen_;
     dev_info = rtc->get_device_info();
 
     bool const enable_prof = 0;
