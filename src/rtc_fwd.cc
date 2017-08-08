@@ -491,13 +491,6 @@ namespace boda
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       must_insert( *op_infos, i->first, make_shared< conv_op_t >( *i->second ) );
     }
-
-    auto_tuner_t auto_tuner;
-    if(autotune){
-      p_rtc_codegen_t codegen_ = std::make_shared<rtc_codegen_t>(codegen);
-      auto_tuner.init(rtc, codegen_, op_tune); //initialization of search space
-    }
-
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       p_conv_op_t const & oi = must_find( *op_infos, i->first );
       op_tune_t used_opt = op_tune; //variable that holds the best tuning parameters, initialized with default values
@@ -512,6 +505,8 @@ namespace boda
         }
         p_conv_op_t op_copy = std::make_shared<conv_op_t>(*oi);
         op_copy->set_u32( "conv_has_relu", conv_has_relu );
+        auto_tuner_t auto_tuner;
+        auto_tuner.init(rtc_be, nia, op_tune); //initialization of search space
         used_opt = auto_tuner.auto_tuning(op_copy, print_tune); //call auto_tuning to get best tuning parameters
       }
 
