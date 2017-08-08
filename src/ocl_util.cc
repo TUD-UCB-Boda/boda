@@ -249,6 +249,7 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       cq.reset( clCreateCommandQueue( context.v, use_devices[0], CL_QUEUE_PROFILING_ENABLE, &err ) ); // note: not out of order
       cl_err_chk( err, "cl::CommandQueue()" );
       init_done.v = 1;
+      printf("Using device %s\n", get_plat_tag().c_str());
     }
 
     rtc_device_info_t get_device_info(void){
