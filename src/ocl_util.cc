@@ -236,7 +236,7 @@ __constant uint32_t const U32_MAX = 0xffffffff;
             rt_err( "attempted to use a non existing device" );
           }
           else {
-            use_devices = vect_cl_device_id{devices[use_device_no]}; // pick selected device only (arbitrarily)
+            use_devices = vect_cl_device_id{devices[use_device_no]}; // pick selected device
           }
         }
       }
