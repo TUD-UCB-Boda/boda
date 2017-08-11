@@ -149,13 +149,20 @@ namespace  boda{
   }
 
   op_tune_t auto_tuner_t::auto_tuning(p_conv_op_base_t anno_op, uint32_t print) {
-    //set up search space for tuning parameters
     dims_t in_dims = anno_op->get_dims("in");
     uint32_t in_x = (in_dims.get_dim_by_name("x"))->sz;
     uint32_t in_y = (in_dims.get_dim_by_name("y"))->sz;
-    convolution_solver_t conv_solver = convolution_solver_t(dev_info.wg_sz, in_x * in_y);
-    search_space space = conv_solver.get_conv_search_space();
-    op_tunes.insert(op_tunes.end(), space.begin(), space.end());
+
+    //set up convolution search space for tuning parameters
+//    convolution_solver_t conv_solver = convolution_solver_t(dev_info.wg_sz, in_x * in_y);
+//    search_space space = conv_solver.get_conv_search_space();
+//    op_tunes.insert(op_tunes.end(), space.begin(), space.end());
+
+    //set up simd convolution search space for tuning parameters
+    dims_t no_dims = anno_op->get_dims( anno_op->coi->top_an(0) );
+    simd_convolution_solver_t simd_conv_solver = simd_convolution_solver_t(dev_info.wg_sz, in_x * in_y, no_dims);
+    search_space simd_space = simd_conv_solver.get_simd_conv_search_space();
+    op_tunes.insert(op_tunes.end(), simd_space.begin(), simd_space.end());
 
     int comp_errs = 0;
 

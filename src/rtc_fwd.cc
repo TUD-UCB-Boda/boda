@@ -509,7 +509,7 @@ namespace boda
         op_copy->set_u32( "conv_has_relu", conv_has_relu );
         auto_tuner_t auto_tuner;
         auto_tuner.init(rtc_be, dev_no, nia, op_tune); //initialization of search space
-        used_opt = auto_tuner.auto_tuning(op_copy, print_tune); //call auto_tuning to get best tuning parameters
+        used_opt = auto_tuner.auto_tuning(op_copy, print_tune); //call auto_tuning to get best tuning parameters for each operation
       }
 
       //add codegen annotations for oi with best op_tune (used_opt) we've found
@@ -529,10 +529,10 @@ namespace boda
 	if( conv_has_relu & !autotune) { must_find( *op_infos, no->in_place_ops[0]->tag )->set_u32( "fused", 1 ); }
 	oi->set_u32( "conv_has_relu", conv_has_relu );
 
-	if( oi->get_func_name() == k1conv_str ) { 
+	if( oi->get_func_name() == k1conv_str ) {
 	  if( ( no->in_place_ops.size() == conv_has_relu ) && ( no->bot_for.size() == 1) ) { // if output feeds single non-in-place operation
 	    p_conv_op_t const & noi = must_find( *op_infos, no->bot_for[0] ); // next operation
-	    if( enable_write_xpose && noi->is( Convolution_coi ) && (noi->get_func_name() == k1conv_str) ) { 
+	    if( enable_write_xpose && noi->is( Convolution_coi ) && (noi->get_func_name() == k1conv_str) ) {
 	      // modify output argument dims to match user's input dims. codegen will notice this and write out correctly.
 	      oi->reset_arg_dims( "out", noi->get_dims( "in" ) );
 	    }
