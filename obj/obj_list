@@ -109,7 +109,6 @@ LDFLAGS := $(LDFLAGS) -lcpp_common -lrosconsole -lrosconsole_print -lrosconsole_
 # particular dependency. note that some dependencies may not usefully be disable-able.
 
 [objs]
-<<<<<<< HEAD
 data-stream-img-util.o
 font-util.o
 data-stream-stream.o
@@ -125,8 +124,6 @@ data-stream-file.o
 data-to-img.o
 data-stream.o
 raw-vid-disp.o SDL2
-=======
->>>>>>> 7505b0649d9ade026b85a5a2cd83aef347b4a59a
 auto_tuner.o
 op-tuner.o
 cnn_op.o
