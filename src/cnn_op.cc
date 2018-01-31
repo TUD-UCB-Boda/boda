@@ -21,6 +21,7 @@ namespace boda
     bool const enable_ipconv = op_tune->ipconv;
     bool const enable_k1conv = op_tune->k1conv;
     bool const enable_tconv = op_tune->tconv;
+    bool const enable_wconv = op_tune->wconv;
     bool const force_enable_tconv = (op_tune->tconv==2);
     dims_t ni_dims;
     dims_t no_dims = op->get_dims( op->coi->top_an(0) );
@@ -46,6 +47,8 @@ namespace boda
       if( is_conv ) { // set func_name (aka variant) for conv case (others are set at bottom)
         if( op_tune->use_culibs ) { 
           op->set_func_name("cudnn_conv");
+        } else if( enable_wconv && get_xy_dims(op->get_dims("kern_sz")) == u32_pt_t{3,3}) {
+            op->set_func_name( wconv_str );
         } else if( enable_ipconv && op->in_pad().is_zeros() && (get_xy_dims(no_dims) == u32_pt_t{1,1}) ) {
           op->set_func_name( ipconv_str ); // single output per-chan-per-image: inner-product case
         } else if( enable_k1conv && (kern_sz_ == u32_pt_t{1,1}) && (op->stride() == u32_pt_t{1,1}) 
@@ -152,6 +155,49 @@ namespace boda
 	dims_t work;
         work.tn = "none";
 	uint32_t const lines_sz = no_dims.dsz("img") * no_sz.d[1];
+
+    if(op->get_func_name() == wconv_str) {
+      dims_t const & img_in = op->get_dims("in");
+      dims_t const & filts = op->get_dims("filts");
+      dims_t const & out= op->get_dims("out");
+
+      uint32_t const out_tile = 2;
+      work.add_dims("wino_tpb", 256);
+
+      uint32_t Nw, TPw, TQw;
+      uint32_t const bs = img_in.dsz("img");
+      if (bs < 2) { Nw = 0; TPw = 2; TQw = 3; }
+      else if (bs < 4) { Nw = 1; TPw = 2; TQw = 2; }
+      else if (bs < 8) { Nw = 2; TPw = 1; TQw = 2; }
+      else if (bs < 16) { Nw = 3; TPw = 1; TQw = 1; }
+      else if (bs < 32) { Nw = 4; TPw = 0; TQw = 1; }
+      else { Nw = 5; TPw = 0; TQw = 0; }
+      work.add_dims("wino_tp", u32_ceil_div(img_in.dsz("x"), out_tile << TPw));
+      work.add_dims("wino_tq", u32_ceil_div(img_in.dsz("y"), out_tile << TQw));
+      work.add_dims("wino_tk", u32_ceil_div(op->get_dims("filts").dsz("out_chan"), 32));
+      work.add_dims("wino_tn", u32_ceil_div(img_in.dsz("img"), 1 << Nw));
+      int filts_work = filts.dsz("out_chan")*filts.dsz("in_chan")*filts.dsz("x")*filts.dsz("y");
+      work.add_dims("filts_work", filts_work);
+      int img_work = img_in.dsz("img")*img_in.dsz("x")*img_in.dsz("y")*img_in.dsz("chan");
+      work.add_dims("img_work", img_work);
+      int out_work = out.dsz("img")*out.dsz("x")*out.dsz("y")*out.dsz("chan");
+      work.add_dims("out_work", out_work);
+      work.calc_strides();
+
+      in_dims = dims_t( vect_uint32_t{
+        img_in.dsz("chan"),img_in.dsz("y"),img_in.dsz("x"),img_in.dsz("img") },
+        vect_string{"chan","y","x","img"}, in_dims.tn );
+      uint32_t in_chan_pad = ni_dims.dsz("chan"); // c&p
+      uint32_t out_chan_pad = out.dsz("chan");
+      op->reset_dims("filts",dims_t( 
+        vect_uint32_t{ in_chan_pad, kern_sz_.d[1], kern_sz_.d[0], out_chan_pad }, 
+        vect_string{"in_chan","y","x","out_chan"}, op->get_dims("filts").tn )); 
+
+      op->reset_dims("out",dims_t( vect_uint32_t{ 
+        out.dsz("chan"), out.dsz("y"), out.dsz("x"), out.dsz("img")}, 
+        vect_string{"chan","y","x","img"}, 
+        op->get_dims("out").tn )); 
+	}
         if( (op->get_func_name() == tconv_str) || (op->get_func_name() == k1conv_str) ) { 
           op->set_dims("flags",make_scalar_dims_t("uint32_t")); // exactly these two variants have this debugging input
         }

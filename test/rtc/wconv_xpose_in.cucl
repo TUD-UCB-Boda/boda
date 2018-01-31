@@ -1,0 +1,14 @@
+CUCL_GLOBAL_KERNEL void %(rtc_func_name) (GASQ float * const in, // CUCL OUT chan:y:x:img
+                                          GASQ float * const in_ref, // CUCL IN img:chan:y:x
+GASQ void const * const work // CUCL REF wino_tpb:wino_tp:wino_tq:wino_tk:wino_tn:filts_work:img_work:out_work:pels_blk:out_chan_blk:pels_tile:out_chan_tile:pels:out_chan
+)
+{                                                                                
+    // CUCL IX GLOB_ID_1D work use_dims=img_work
+    int CHW = %(in_chan_dim)*%(in_x_dim)*%(in_y_dim);
+    int n = GLOB_ID_1D / CHW;                                            
+    int N = %(in_img_dim);
+    if (n < N) {                                                         
+        int chw = GLOB_ID_1D - n * CHW;                                  
+        in[chw* N + n] = in_ref[GLOB_ID_1D];                             
+    }                                                                            
+}

@@ -23,6 +23,7 @@ namespace boda
       else if( op_name == "bconv" ) { gen_op_bconv(rcg); } 
       else if( op_name == "bconv_fb" ) { gen_op_bconv_fb(rcg); } 
       else if( op_name == "reduce" ) { gen_op_reduce(rcg); } 
+      else if( op_name == "wconv" ) { gen_op_winograd(rcg); }
     }
 
     void gen_op_reduce( rtc_call_gen_t * rcg ) {
@@ -160,6 +161,38 @@ namespace boda
 	rcg->line( "biases_smem_loads", strprintf("if( ocix < %%(biases_out_chan_dim) ) {filts_smem[%s] = biases[ocix];}%s",ixe.c_str(),eif.c_str()) );
       }
 
+    }
+
+    void gen_op_winograd( rtc_call_gen_t * rcg ) {
+      dims_t const & img = rcg->get_arg_dims_by_name("in");
+      dims_t const & filts = rcg->get_arg_dims_by_name("filts");
+      uint32_t TPmask, TPwidth, TPshift, TQmask, TQwidth, TQshift, Nmask, Nwidth;       
+      uint32_t N = img.dsz("img");
+      if (N < 2)
+        TPmask = 0x18, TPwidth = 2, TPshift = 3, TQmask = 0x07, TQwidth = 3, TQshift = 0, Nmask = 0x00, Nwidth = 0;
+      else if (N < 4)
+        TPmask = 0x18, TPwidth = 2, TPshift = 3, TQmask = 0x06, TQwidth = 2, TQshift = 1, Nmask = 0x01, Nwidth = 1;
+      else if (N < 8)
+        TPmask = 0x10, TPwidth = 1, TPshift = 4, TQmask = 0x0c, TQwidth = 2, TQshift = 2, Nmask = 0x03, Nwidth = 2;
+      else if (N < 16)
+        TPmask = 0x10, TPwidth = 1, TPshift = 4, TQmask = 0x08, TQwidth = 1, TQshift = 3, Nmask = 0x07, Nwidth = 3;
+      else if (N < 32)
+        TPmask = 0x00, TPwidth = 0, TPshift = 0, TQmask = 0x10, TQwidth = 1, TQshift = 4, Nmask = 0x0f, Nwidth = 4;
+      else
+        TPmask = 0x00, TPwidth = 0, TPshift = 0, TQmask = 0x00, TQwidth = 0, TQshift = 0, Nmask = 0x1f, Nwidth = 5;
+
+      rcg->set("win_TP", str( u32_ceil_div(img.dsz("x"), 2 << TPwidth)));
+      rcg->set("win_TQ", str( u32_ceil_div(img.dsz("y"), 2 << TQwidth)));
+
+      string const simple_superblocking = strprintf(
+        "    int TPmask = %d, TPwidth = %d, TPshift = %d,"
+        "        TQmask = %d, TQwidth = %d, TQshift = %d,"
+        "        Nmask = %d, Nwidth = %d;"
+        , TPmask, TPwidth, TPshift, TQmask, TQwidth, TQshift, Nmask, Nwidth);
+
+      rcg->set("superblocking", simple_superblocking);
+      rcg->set("win_TK", str( u32_ceil_div(rcg->get_arg_dims_by_name("out").dsz("chan"), 32)));
+      rcg->set("win_TN", str( u32_ceil_div(img.dsz("img"), 1 << Nwidth)));
     }
 
     void gen_op_conv( rtc_call_gen_t * rcg ) {
