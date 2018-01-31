@@ -164,6 +164,33 @@ namespace boda
 
   }
 
+    std::ostringstream conv_op_base_t::get_conv_dims_info() {
+      std::ostringstream tuning_info;
+
+      dims_t in_dims = this->get_dims("in");
+      uint32_t in_x = (in_dims.get_dim_by_name("x"))->sz;
+      uint32_t in_y = (in_dims.get_dim_by_name("y"))->sz;
+      tuning_info << "\tin = " << in_x << ":" << in_y << ", ";
+      dims_t out_dims = this->get_dims("out");
+      uint32_t out_x = (out_dims.get_dim_by_name("x"))->sz;
+      uint32_t out_y = (out_dims.get_dim_by_name("y"))->sz;
+      tuning_info << "out = " << out_x << ":" << out_y << ", ";
+      dims_t filt_dims = this->get_dims("filts");
+      uint32_t filt_x = (filt_dims.get_dim_by_name("x"))->sz;
+      uint32_t filt_y = (filt_dims.get_dim_by_name("y"))->sz;
+      tuning_info << "filts = " << filt_x << ":" << filt_y << ", ";
+      dims_t kern_dims = this->get_dims("kern_sz");
+      uint32_t kern_x = (kern_dims.get_dim_by_name("x"))->sz;
+      uint32_t kern_y = (kern_dims.get_dim_by_name("y"))->sz;
+      tuning_info << "kern_sz = " << kern_x << ":" << kern_y << ", ";
+      dims_t stride_dims = this->get_dims("stride");
+      uint32_t stride_x = (stride_dims.get_dim_by_name("x"))->sz;
+      uint32_t stride_y = (stride_dims.get_dim_by_name("y"))->sz;
+      tuning_info << "stride = " << stride_x << ":" << stride_y << "\n";
+
+      return tuning_info;
+    }
+
   u32_pt_t conv_in_sz_to_out_sz( u32_pt_t const & in_sz, 
                                  u32_pt_t const & in_pad_if_used, u32_pt_t const & stride, u32_pt_t const & kern_sz ) 
   {

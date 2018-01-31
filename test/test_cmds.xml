@@ -98,6 +98,10 @@
   <li test_name="test_quantize_2" cli_str="boda test_compute_multi --model-name=nin_imagenet --wins-per-image=1 --imgs='(pil_fn=%(boda_test_dir)/pascal/head_1/%%s.txt)' --run-cnet='(in_dims=(img=1,y=227,x=227),out_node_name=conv1)' --cfn='(_=rtc-nq,_=rtc)' --cf='(_=(mode=rtc),_=(mode=rtc,quantize=(_=(name=conv1,max_val=1024,keep_bits=9))))' --diff-show-mrd-only=1" />
   <li test_name="test_stats_1" cli_str="boda test_compute_multi --model-name=nin_imagenet --wins-per-image=1 --imgs='(pil_fn=%(boda_test_dir)/pascal/head_1/%%s.txt)' --run-cnet='(in_dims=(img=1,y=227,x=227),out_node_name=conv1)' --cfn=(_=rtc) --cf='(_=(mode=rtc,enable_stats=1))' --max-err=10" />
 
+  <li test_name="test_autotune_1" cli_str="boda run_cnet --model-name=nin_imagenet --in_dims='(img=1)' --conv_fwd='(mode=rtc,write_op_sigs=1)' --autotune=0" />
+  <li test_name="test_autotune_2" cli_str="boda run_cnet --model-name=nin_imagenet --in_dims='(img=1)' --conv_fwd='(mode=rtc,write_op_sigs=1)' --autotune=1" />
+  <li test_name="test_ipc_autotune" cli_str="boda run_cnet --model-name=nin_imagenet --in_dims='(img=1)' --conv_fwd='(mode=rtc,rtc=(be=ipc))' --autotune=1" />
+
   <li test_name="test_upsamp_1_nvrtc" cli_str="boda test_upsamp --model-name nin_imagenet_nopad --wins-per-image=3 --run-cnet='(in_dims=(img=1,y=516,x=516),enable_upsamp_net=1,out_node_name=cccp8,conv_fwd=(mode=rtc),conv_fwd_upsamp=(mode=rtc,op_tune=(tconv=1)))'"/>
 
 <li test_name="test_cnn_op_info_1" cli_str="boda cnn_op_info --rtc='(be=ocl)' --gen-data='(str_vals=(type=gen_data),nda_vals=(vi=(tn=float,v=0.0),mode=(tn=uint32_t,v=600)))' --rtc-comp='(be=nvrtc)'  --max-err=10 --cnn-func-sigs-fn='%(boda_test_dir)/sgemm-ops-debug.txt' --out-fn='%(boda_output_dir)/cnn_op_info.txt'" />

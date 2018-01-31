@@ -113,6 +113,8 @@ namespace boda
     return ret;
   }
   template< typename GI > string get_info_str( GI const & gi ) { return get_info_vect< string, GI >( gi ); }
+  template< typename GI > cl_ulong get_info_cl_ulong( GI const & gi ) { return get_info< cl_ulong, GI >( gi ); }
+  template< typename GI > size_t get_info_size_t( GI const & gi ) { return get_info< size_t, GI >( gi ); }
 
   cl_ulong get_prof_info( cl_event_t const & event, cl_profiling_info const & pn ) {
     cl_ulong ret; cl_int err = clGetEventProfilingInfo( event.v, pn, sizeof(ret), &ret, 0 );
@@ -227,9 +229,16 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       cl_get_platforms( platforms );
       if( platforms.empty() ) { rt_err( "no OpenCL platforms found" ); }
       for( vect_cl_platform_id::const_iterator i = platforms.begin(); i != platforms.end(); ++i ) {
-	vect_cl_device_id devices;
-	cl_get_devices( devices, *i, CL_DEVICE_TYPE_GPU );
-	if( !devices.empty() ) { use_devices = vect_cl_device_id{devices[0]}; } // pick first device only (arbitrarily)
+	      vect_cl_device_id devices;
+	      cl_get_devices( devices, *i, CL_DEVICE_TYPE_GPU );
+	      if( !devices.empty() ) {
+          if(use_device_no >= devices.size()){
+            rt_err( "attempted to use a non existing device" );
+          }
+          else {
+            use_devices = vect_cl_device_id{devices[use_device_no]}; // pick selected device
+          }
+        }
       }
       if( use_devices.empty() ) { rt_err( "no OpenCL platform had any GPUs (devices of type CL_DEVICE_TYPE_GPU)" ); }
       cl_int err = CL_SUCCESS;  
@@ -242,9 +251,25 @@ __constant uint32_t const U32_MAX = 0xffffffff;
       init_done.v = 1;
     }
 
+    rtc_device_info_t get_device_info(void){
+      rtc_device_info_t dev_info;
+      cl_ulong loc_mem_size;
+      size_t maxWorkGroupSz;
+      string device_name;
+      device_name = get_info_str(Device_t(use_devices[0],CL_DEVICE_NAME));
+      loc_mem_size = get_info_cl_ulong(Device_t(use_devices[0], CL_DEVICE_LOCAL_MEM_SIZE));
+      maxWorkGroupSz = get_info_size_t(Device_t(use_devices[0], CL_DEVICE_MAX_WORK_GROUP_SIZE));
+      assert_st(loc_mem_size > 0);
+      assert_st(maxWorkGroupSz > 0);
+      dev_info.mem_sz = (uint64_t)loc_mem_size;
+      dev_info.wg_sz = (uint64_t)maxWorkGroupSz;
+      dev_info.device_name = device_name;
+      return dev_info;
+    }
+
     virtual string get_plat_tag( void ) {
       assert_st( init_done.v );
-      assert_st( use_devices.size() == 1 );
+      assert_st( use_devices.size() >= 1 );
       return "ocl:" + string(get_info_str(Device_t(use_devices[0],CL_DEVICE_NAME)).c_str()); // FIXME: check-for and strip NULL earlier?
     }
 

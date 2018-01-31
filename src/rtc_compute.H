@@ -27,6 +27,13 @@ namespace boda
     vect_string arg_names;
     op_base_t op;
   };
+
+  struct rtc_device_info_t {
+      string device_name;
+    uint64_t mem_sz;
+    uint64_t wg_sz;
+  };
+
   typedef vector< rtc_func_info_t > vect_rtc_func_info_t; 
   std::ostream & operator << ( std::ostream & out, rtc_func_info_t const & o );
 
@@ -38,12 +45,14 @@ namespace boda
     string be; //NESI(help="name of back-end to use for rtc",req=1)
     uint32_t gen_src; //NESI(default=0,help="if 1, output generated src files just before compilation")
     filename_t gen_src_output_dir; //NESI(default="%(boda_output_dir)/rtc-gen-src", help="if requested, directory where generated source files will be placed")
+    uint32_t use_device_no; //NESI(default=0,help="device number of OpenCL device to use")
 
     string rtc_base_decls;
     string const & get_rtc_base_decls( void ); // note: caches results in rtc_base_decls
 
     virtual void init( void ) = 0;
     virtual string get_plat_tag( void ) = 0;
+    virtual rtc_device_info_t get_device_info(void) = 0;
 
     virtual void create_var_with_dims( string const & vn, dims_t const & dims ) = 0;
     virtual void create_var_with_dims_as_reshaped_view_of_var( string const & vn, dims_t const & dims, string const & src_vn ) = 0; // note: will point to (and share as a peer) the data of existing var named by src_vn
