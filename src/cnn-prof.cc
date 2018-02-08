@@ -37,6 +37,7 @@ namespace boda
 
     op_tune_t op_tune; //NESI(default="()",help="tuning parameters / options")
     uint32_t run_iter; //NESI(default="1",help="re-run op to profile this many times (for power testing)")
+    // XXX figure out how to this from the command line
     op_tune_t op_tune_comp; //NESI(default="(use_culibs=1,MNt=4:4,MNb=8:8,Kb=1,opt=0)",help="tuning parameters / options")
 
     map_str_op_tune_t per_op_tune; //NESI(default="()",help="tuning parameters / options")

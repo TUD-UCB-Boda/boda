@@ -22,9 +22,27 @@ namespace boda
   // semi-dupe'd with rtc_fwd gen_apply_func_to_var(). working toward convergence. note that in this use model, the
   // input and output variable names and arg names happen to be the same, hence the 'an_and_vn' arguments to this func.
   void run_xpose( p_op_base_t const & anno_op, rtc_codegen_t & codegen, string const & xpose_func_name, 
-                  string const &out_an_and_vn, string const &in_an_and_vn )  {
-    p_rcg_func_call_t rfc = codegen.gen_func_override_func_name( xpose_func_name, *anno_op, 
-                           map_str_rtc_arg_t{{out_an_and_vn,out_an_and_vn},{in_an_and_vn,in_an_and_vn}});
+                  string const &out_an_and_vn, string const &in_an_and_vn, p_op_base_t const & in_gen_op_orig )  {
+    p_rcg_func_call_t rfc;
+    string biases = "biases";
+    if (xpose_func_name == "sconv_xpose_out_buf") {
+      p_op_base_t in_gen_op = make_shared<op_base_t>( *in_gen_op_orig );
+      
+      in_gen_op->set_func_name( in_gen_op->get_type()+"_"+anno_op->get_type()+"_biases" );
+       
+      dims_t const & in_dims = anno_op->get_dims( "biases" );
+      in_gen_op->set_dims( "biases", in_dims );
+
+      
+      p_rcg_func_call_t rfc_in_gen = codegen.gen_func( *in_gen_op, map_str_rtc_arg_t{{biases,biases}} );
+      codegen.run_func( *rfc_in_gen);
+      
+      rfc = codegen.gen_func_override_func_name( xpose_func_name, *anno_op, 
+						 map_str_rtc_arg_t{{out_an_and_vn,out_an_and_vn},{in_an_and_vn,in_an_and_vn},{biases, biases}});
+    } else {
+      rfc = codegen.gen_func_override_func_name( xpose_func_name, *anno_op, 
+						 map_str_rtc_arg_t{{out_an_and_vn,out_an_and_vn},{in_an_and_vn,in_an_and_vn}});
+    }
     codegen.run_func( *rfc );
   }
   
@@ -62,6 +80,10 @@ namespace boda
       // FIXME: overwrite dims. yeah, this doesn't feel too right ... hmm. see comments in gen_func()
       arg_map[ i.vn() ] = i.vn();
     }
+    if (anno_op_func_name == "sconv") {
+      string biases = "biases";
+      arg_map[biases] = biases;
+    }
     // FIXME: horrible: some kernels take a scalar uint32_t flags, and we know 0 is 'normal-mode'. so we set it here,
     // for all ops, and hope that's okay.
 
@@ -95,7 +117,7 @@ namespace boda
           string xpose_op = anno_op_func_name+"_xpose_"+i.vn();
           // FIXME: sigh.
           if( ( i.vn() == "filts" ) && is_k1_or_t_or_reg_conv(anno_op->get_func_name())) { xpose_op = "xpose_filts"; }
-          run_xpose( anno_op, codegen, xpose_op, gen_vn, i.vn() );
+          run_xpose( anno_op, codegen, xpose_op, gen_vn, i.vn(), in_gen_op_orig );
           if( include_ins_in_outs && outs ) { must_insert( *outs, i.vn(), codegen.rtc->create_nda_from_var( i.vn() ) ); } 
         }
       }
@@ -116,7 +138,7 @@ namespace boda
         gen_vn += "_ref"; 
         rvh.create( gen_vn, ref_out_dims ); 
       }
-      if( gen_vn != i.vn() ) { run_xpose( anno_op, codegen, anno_op_func_name+"_xpose_"+i.vn(), gen_vn, i.vn() ); }
+      if( gen_vn != i.vn() ) { run_xpose( anno_op, codegen, anno_op_func_name+"_xpose_"+i.vn(), gen_vn, i.vn(), in_gen_op_orig  ); }
       if( outs ) { must_insert( *outs, i.vn(), codegen.rtc->create_nda_from_var( gen_vn ) ); } 
     }
     codegen.rtc->finish_and_sync();

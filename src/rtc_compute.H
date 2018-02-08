@@ -4,9 +4,9 @@
 
 #include"boda_base.H"
 #include"op_base.H"
-
 namespace boda 
 {
+  extern string ocl_base_decls;
   struct rtc_compile_opts_t : virtual public nesi // NESI(help="runtime compilation options") 
   {
     virtual cinfo_t const * get_cinfo( void ) const; // required declaration for NESI support
@@ -21,11 +21,49 @@ namespace boda
     rtc_compile_opts_t( void ) : show_compile_log(0), enable_lineinfo(0), show_func_attrs(0), show_rtc_calls(0) { }
   };
 
+  struct arg_decl_t {
+    string vn;
+    zi_bool multi;
+    string tn;
+    zi_uint32_t loi;
+    string io_type;
+    zi_bool dyn;
+    vect_dims_t ok_dims;
+    void set_vn_tn( string const & vn_, string const & tn_ );
+    void ref_parse( string const & line );
+    void arg_parse( string const & line );
+    uint32_t get_multi_sz( op_base_t const & op ) const;
+    string get_multi_vn( uint32_t const mix ) const;
+  };
+
+  struct vect_arg_decl_t : public vector< arg_decl_t > {
+    struct multi_iter {
+      iterator i;
+      iterator e;
+      op_base_t const * op;
+      uint32_t msz_;
+      uint32_t mix;
+      string vn_;
+      bool at_end( void ) const { return i == e; }
+      uint32_t msz( void ) { if( !msz_ ) { msz_ = i->get_multi_sz( *op ); } return msz_; }
+      void operator ++( void ) {
+        assert_st( mix < msz() );
+        if( mix < (msz()-1) ) { ++mix; vn_.clear(); return; }
+        msz_ = 0; mix = 0; vn_.clear(); ++i;
+      }
+      string & vn( void ) { if( vn_.empty() ) { vn_ = i->get_multi_vn( mix ); assert_st( !vn_.empty() ); } return vn_; }
+      arg_decl_t & ad( void ) { return *i; }
+    };
+    multi_iter multi_begin( op_base_t const * const op ) { return multi_iter{begin(),end(),op,0,0}; }
+  };
+
   struct rtc_func_info_t {
     string func_name;
     string func_src;
     vect_string arg_names;
     op_base_t op;
+    vect_arg_decl_t arg_decls; // XXX: partially redundant with arg_names
+    uint32_t tpb;
   };
   typedef vector< rtc_func_info_t > vect_rtc_func_info_t; 
   std::ostream & operator << ( std::ostream & out, rtc_func_info_t const & o );

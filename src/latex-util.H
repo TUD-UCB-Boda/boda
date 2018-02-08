@@ -106,8 +106,8 @@ namespace boda
       op = op_;
       emit_bw = 0;
       if( op->is( Convolution_coi ) ) {
-	dout = op->get_dims("out");
-	din = op->get_dims("in");
+	dout = op->get_dims("out_buf");
+	din = op->get_dims("in_buf");
 	B = din.dsz( "img" );
 	assert_st( B == dout.dsz("img" ) );
 	// AI-related calculations

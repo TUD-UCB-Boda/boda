@@ -4,6 +4,7 @@
 #include"CL/cl.h"
 #include"ocl_err.H"
 #include"rtc_compute.H"
+
 #include"timers.H"
 
 namespace boda 
@@ -210,8 +211,12 @@ __constant uint32_t const U32_MAX = 0xffffffff;
 #define store_float_to_rp_half( val, ix, p ) vstore_half( val, ix, p )
 #define store_float_to_rp_float( val, ix, p ) p[ix] = val
 
-)rstr";
+#define START_ARG ,
+#define END_ARG
+#define FLOAT_CAST (float)
+#define INT_CAST(x) (int) x
 
+)rstr";
 
   struct ocl_compute_t : virtual public nesi, public rtc_compute_t // NESI(help="OpenCL based rtc support",
 			   // bases=["rtc_compute_t"], type_id="ocl" )
@@ -404,6 +409,8 @@ __constant uint32_t const U32_MAX = 0xffffffff;
     void release_func( string const & func_name ) { must_erase( *kerns, func_name ); }
 
     uint32_t run( rtc_func_call_t const & rfc ) {
+      // XXX remove timers here and below
+      timer_t t1("ocl run");
       ocl_func_info_t const & ofi = must_find( *kerns, rfc.rtc_func_name.c_str() );
       uint32_t cur_arg_ix = 0;
       for( vect_string::const_iterator i = ofi.info.arg_names.begin(); i != ofi.info.arg_names.end(); ++i ) {
@@ -424,8 +431,11 @@ __constant uint32_t const U32_MAX = 0xffffffff;
                               str(loc_work_sz).c_str(), str(kwgs).c_str() ) );
       }
       cl_event ev = 0;
+      timer_t t("ocl kernel" + rfc.rtc_func_name);
       cl_int const err = clEnqueueNDRangeKernel( cq.v, ofi.kern.v, 1, 0, &glob_work_sz, &loc_work_sz, 0, 0, &ev);
       cl_err_chk( err, "clEnqueueNDRangeKernel()" );
+      clWaitForEvents(1, &ev);
+      t.stop();
       get_call_ev(call_id).reset(ev);
       return call_id;
     }

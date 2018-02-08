@@ -266,18 +266,18 @@ namespace boda
     if( oi->has( "fused" ) ) { return; } // operation was fused into another, so do nothing here for it
     if( oi->is( Concat_coi ) ) {      
       uint32_t chans_out_done = 0;
-      for( uint32_t bi = 0; bi != oi->get_u32("ins_num"); ++bi ) {
+      for( uint32_t bi = 0; bi != oi->get_u32("in_bufs_num"); ++bi ) {
 	dims_t const & dims_in = oi->get_dims( oi->coi->bot_an(bi) );
-	assert_st( get_xy_dims( dims_in ) == get_xy_dims( oi->get_dims("out") ) );
-	assert_st( chans_out_done+dims_in.dsz("chan") <= oi->get_dims("out").dsz("chan") );
+	assert_st( get_xy_dims( dims_in ) == get_xy_dims( oi->get_dims("out_buf") ) );
+	assert_st( chans_out_done+dims_in.dsz("chan") <= oi->get_dims("out_buf").dsz("chan") );
         oi->set_u32( "ocix", chans_out_done );
-	set_rtc_arg( oi, rtc, "in", oi->get_arg( oi->coi->bot_an(bi) ) );
+	set_rtc_arg( oi, rtc, "in_buf", oi->get_arg( oi->coi->bot_an(bi) ) );
 	gen_call( oi );
 	chans_out_done += dims_in.dsz("chan");
-	oi->erase_arg( "in" );
+	oi->erase_arg( "in_buf" );
 	oi->erase( "ocix" );
       }
-      assert_st( chans_out_done == oi->get_dims("out").dsz("chan") );
+      assert_st( chans_out_done == oi->get_dims("out_buf").dsz("chan") );
     } else if( oi->is( Split_coi ) ) { // FIXME: pretty dup'd with Concat above ... generalize/merge/share?
       uint32_t chans_in_done = 0;
       for( uint32_t ti = 0; ti != oi->get_u32("outs_num"); ++ti ) {
@@ -294,12 +294,12 @@ namespace boda
       assert_st( chans_in_done == oi->get_dims("in").dsz("chan") );
     } else if( oi->is( Pooling_coi ) ) {
       if( oi->get_u32("emit_out_in_yx") == 1 ) {
-	string const out_in_yx = oi->get_arg("out") + "_in_yx"; 
-	rtc->create_var_with_dims( out_in_yx, oi->get_dims("out") ); // same size as out
-	set_rtc_arg( oi, rtc, "out_in_yx", out_in_yx );
+	string const out_in_yx = oi->get_arg("out_buf") + "_in_yx"; 
+	rtc->create_var_with_dims( out_in_yx, oi->get_dims("out_buf") ); // same size as out
+	set_rtc_arg( oi, rtc, "out_buf_in_yx", out_in_yx );
       } else {
 	assert_st( oi->get_u32("emit_out_in_yx") == 0 );
-	oi->set_null_arg_dims( "out_in_yx", oi->get_dims("out") ); // proper dims, but no var will be passed at call time
+	oi->set_null_arg_dims( "out_buf_in_yx", oi->get_dims("out_buf") ); // proper dims, but no var will be passed at call time
       }
       gen_call( oi );
     } else if( oi->is( Convolution_coi ) ) {
@@ -311,7 +311,7 @@ namespace boda
 	oi->reset_arg( "filts", gen_apply_func_to_var( "filts_ref", oi->get_arg("filts"), "filts", oi->get_dims("filts"), 
 						       "xpose_filts", oi ) );
       }
-      string const in_id = oi->get_arg("in");
+      string const in_id = oi->get_arg("in_buf");
       // note: as this point: oi->get_dims("in") may not == rtc->get_var_dims( in_id ); see comment in init()
       if( oi->get_func_name() == tconv_str ) {
 	// assume input needs the below xform and apply it. FIXME(?): fails if vars are in unexpected formats.
@@ -325,21 +325,21 @@ namespace boda
 	} 	
       } 
       // FIXME: perhaps all ops should create outputs. but for now, only conv can have non-reference output dims ...
-      rtc->create_var_with_dims( oi->get_arg("out"), oi->get_dims("out") ); 
+      rtc->create_var_with_dims( oi->get_arg("out_buf"), oi->get_dims("out_buf") ); 
       gen_call( oi );
     } else if( oi->is( ReLU_coi ) ) {
       assert_st( oi->get_arg("in") == oi->get_arg("out") ); // check that this is a single in-out in-place operation
       set_rtc_arg( oi, rtc, "inout", oi->get_arg("in") );
       gen_call( oi );
     } else if( oi->is( LRN_coi ) ) {
-      assert_st( oi->get_dims("in") == oi->get_dims("out") ); // FIXME: better place/way for this check?
-      if( oi->get_u32("emit_out_scale_base") == 1 ) {
-	string const out_scale_base = oi->get_arg("out") + "_scale_base"; 
-	rtc->create_var_with_dims( out_scale_base, oi->get_dims("out") ); // same size as out
+      assert_st( oi->get_dims("in_buf") == oi->get_dims("out_buf") ); // FIXME: better place/way for this check?
+      if( oi->get_u32("emit_out_buf_scale_base") == 1 ) {
+	string const out_scale_base = oi->get_arg("out_buf") + "_scale_base"; 
+	rtc->create_var_with_dims( out_scale_base, oi->get_dims("out_buf") ); // same size as out
 	set_rtc_arg( oi, rtc, "out_scale_base", out_scale_base );
       } else {
-	assert_st( oi->get_u32("emit_out_scale_base") == 0 );
-	oi->set_null_arg_dims( "out_scale_base", oi->get_dims("out") );
+	assert_st( oi->get_u32("emit_out_buf_scale_base") == 0 );
+	oi->set_null_arg_dims( "out_buf_scale_base", oi->get_dims("out_buf") );
       }
       gen_call( oi );
     } else if( oi->is( BckLRN_coi ) ) {
@@ -486,7 +486,7 @@ namespace boda
     for( map_str_p_conv_op_t::iterator i = cp->convs->begin(); i != cp->convs->end(); ++i ) { 
       p_conv_op_t const & oi = must_find( *op_infos, i->first );
       if( oi->is( Convolution_coi ) ) {
-	p_conv_node_t no = cp->must_get_node( oi->get_arg("out") ); // aka oi->coi->top_an(0) ...
+	p_conv_node_t no = cp->must_get_node( oi->get_arg("out_buf") ); // aka oi->coi->top_an(0) ...
 	bool const conv_has_relu = (no->in_place_ops.size() > 0) && (no->in_place_ops[0]->is(ReLU_coi));
 	// mark relu as fused-away; mark conv as having fused-on relu // NOTE/FIXME(?): relu may be not-init()-yet here ...
 	if( conv_has_relu ) { must_find( *op_infos, no->in_place_ops[0]->tag )->set_u32( "fused", 1 ); } 
@@ -556,14 +556,23 @@ namespace boda
       rtc->finish_and_sync();
     }
     float const compute_dur = fwd_calls.empty() ? 0.0f : rtc->get_dur( fwd_calls.front().call_id, fwd_calls.back().call_id );
+    float sum = 0.0;
+    for( vect_rtc_fwd_func_call_t::iterator i = fwd_calls.begin(); i != fwd_calls.end(); ++i ) {
+      if( i->call_tag.empty() ) { continue; }
+      sum +=  rtc->get_dur( i->call_id, i->call_id );
+    }
+    printf ("Sum of kernel runtimes: %f , Runtime from first to last kernel: %f \n", sum, compute_dur);
+    
     if( enable_prof ) { rtc->profile_stop(); }
     if( !per_call_fn.empty() ) {
+      float sum = 0.0;
       p_ostream out = ofs_open( per_call_fn );
       (*out) << strprintf("net.args.runtime=%s\n", str(compute_dur/1000.0).c_str() );
       for( vect_rtc_fwd_func_call_t::iterator i = fwd_calls.begin(); i != fwd_calls.end(); ++i ) {
 	rcg_func_call_t & rfc = *i->rfc;
 	if( i->call_tag.empty() ) { continue; }
 	float const rfc_dur = rtc->get_dur( i->call_id, i->call_id );
+	sum += rfc_dur;
 	(*out) << strprintf( "per_layer_time['%s']=per_layer_time.get('%s',0.0) + %s # %s \n", 
 			     str(i->call_tag).c_str(), str(i->call_tag).c_str(), str(rfc_dur/1000.0).c_str(), 
                              rfc.rcg->gen_fn.c_str() );

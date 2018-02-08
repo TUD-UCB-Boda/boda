@@ -1,11 +1,26 @@
-CUCL_GLOBAL_KERNEL void %(rtc_func_name)( GASQ float const * const in, // CUCL IN img:chan:y:x
-                                          uint32_t const ocix, // CUCL IN :
-					  GASQ float * const out ) // CUCL OUT img:chan:y:x
+#ifdef GLSL
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+layout(set = 0, binding = 0) readonly buffer in_buf_t{
+  float in_buf[];
+};
+layout(set = 0, binding = 1) buffer out_buf_t{
+  float out_buf[];
+};
+layout (set = 0, binding = 2) buffer POD
 {
-  // CUCL IX GLOB_ID_1D in
-  if( GLOB_ID_1D >= %(in_dims_prod) ) { return; }
-  int32_t const out_ix = %(GLOB_ID_1D_img)*%(out_img_stride) + (%(GLOB_ID_1D_chan)+%(ocix))*%(out_chan_stride) +
-    %(GLOB_ID_1D_y)*%(out_y_stride) + %(GLOB_ID_1D_x)*%(out_x_stride);  
-  out[out_ix] = in[GLOB_ID_1D];
+  uint32_t ocix;
+};
+void main()
+#else
+CUCL_GLOBAL_KERNEL void %(rtc_func_name)( GASQ float const * const in_buf, // CUCL IN img:chan:y:x
+                                          uint32_t const ocix, // CUCL IN :
+					  GASQ float * const out_buf ) // CUCL OUT img:chan:y:x
+#endif
+{
+  // CUCL IX GLOB_ID_1D in_buf
+  if( GLOB_ID_1D >= %(in_buf_dims_prod) ) { return; }
+  const uint32_t out_ix = %(GLOB_ID_1D_img)*%(out_buf_img_stride) + (%(GLOB_ID_1D_chan)+%(ocix))*%(out_buf_chan_stride) +
+    %(GLOB_ID_1D_y)*%(out_buf_y_stride) + %(GLOB_ID_1D_x)*%(out_buf_x_stride);  
+  out_buf[out_ix] = in_buf[GLOB_ID_1D];
 }
 

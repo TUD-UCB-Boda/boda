@@ -1,4 +1,26 @@
 #define LRN_MATCH_CAFFE
+#ifdef GLSL
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+layout(set = 0, binding = 0) readonly buffer in_buf_t{
+  float in_buf[];
+};
+layout(set = 0, binding = 1) buffer out_buf_t{
+  float out_buf[];
+};
+layout(set = 0, binding = 2) buffer out_buf_scale_base_t{
+  float out_buf_scale_base[];
+};
+
+layout (set = 0, binding = 3) buffer POD
+{
+  float alpha;
+  float beta;
+  float k;
+  uint32_t local_size;
+  uint32_t emit_out_buf_scale_base;
+};
+void main()
+#else
 // note: the results of LRN_MATCH_CAFFE mode differ from the 'regular' mode by 7e-4 (max abs diff) and 8e-6 (avg abs
 // diff) (on one example). it would seem safe to assume the non-caffe mode below is more stable, since the main
 // difference is in not doing -+s on squared values, but this hasn't been checked in detail.  now, cuDNN results differ
@@ -18,50 +40,57 @@ CUCL_GLOBAL_KERNEL void %(rtc_func_name)( float const alpha, // CUCL IN :
                                           float const beta, // CUCL IN :
                                           float const k, // CUCL IN :
                                           uint32_t const local_size, // CUCL IN :
-                                          GASQ float const * const in, // CUCL IN img:chan:y:x
-					  GASQ float * const out, // CUCL OUT img:chan:y:x
-                                          uint32_t const emit_out_scale_base, // CUCL IN :
-					  GASQ float * const out_scale_base ) // CUCL OUT img:chan:y:x
-// note: out_scale_base will be NULL+unused if emit_out_scale_base is 0; otherwise it will be non-null and used.
+                                          GASQ float const * const in_buf, // CUCL IN img:chan:y:x
+					  GASQ float * const out_buf, // CUCL OUT img:chan:y:x
+                                          uint32_t const emit_out_buf_scale_base, // CUCL IN :
+					  GASQ float * const out_buf_scale_base ) // CUCL OUT img:chan:y:x
+// note: out_buf_scale_base will be NULL+unused if emit_out_buf_scale_base is 0; otherwise it will be non-null and used.
+#endif
 {
-  // CUCL IX GLOB_ID_1D out use_dims=img:y:x
+  // CUCL IX GLOB_ID_1D out_buf use_dims=img:y:x
   if( GLOB_ID_1D >= %(GLOB_ID_1D_dims_prod) ) { return; }
   // iteratate over chans
+  #ifdef GLSL
+  float ls_buf[%(local_size)];
+  for (int i = 0; i < %(local_size);i++)
+      ls_buf[i] = 0;
+  #else
   float ls_buf[%(local_size)] = {0.0f};
-  int32_t const hls = %(local_size) >> 1;
-  int32_t const out_base_ix = %(GLOB_ID_1D_img)*%(out_img_stride) + %(GLOB_ID_1D_y)*%(out_y_stride) + %(GLOB_ID_1D_x)*%(out_x_stride); 
+  #endif
+  const int32_t hls = %(local_size) >> 1;
+  const uint32_t out_buf_base_ix = %(GLOB_ID_1D_img)*%(out_buf_img_stride) + %(GLOB_ID_1D_y)*%(out_buf_y_stride) + %(GLOB_ID_1D_x)*%(out_buf_x_stride); 
   float ls_sum = 0.0f;
 
 #ifdef LRN_MATCH_CAFFE
-  float const alpha_over_ls = (float)(%(alpha)) / (float)(%(local_size));
-  for( int32_t in_chan_ix = 0; in_chan_ix < %(out_chan_dim) + hls; ++in_chan_ix ) {
-    int32_t const in_off = in_chan_ix*%(out_chan_stride);
-    int32_t const lsb_ix = in_chan_ix %% %(local_size);
-    float const ls_old = ls_buf[lsb_ix];
-    ls_buf[lsb_ix] = (in_chan_ix < %(out_chan_dim)) ? in[out_base_ix + in_off] : 0.0f;
+  const float alpha_over_ls = FLOAT_CAST (%(alpha)) / FLOAT_CAST (%(local_size));
+  for( int32_t in_chan_ix = 0; in_chan_ix < %(out_buf_chan_dim) + hls; ++in_chan_ix ) {
+    const int32_t in_off = in_chan_ix*%(out_buf_chan_stride);
+    const int32_t lsb_ix = in_chan_ix %% %(local_size);
+    const float ls_old = ls_buf[lsb_ix];
+    ls_buf[lsb_ix] = (in_chan_ix < %(out_buf_chan_dim)) ? in_buf[out_buf_base_ix + in_off] : 0.0f;
     ls_sum += ls_buf[lsb_ix]*ls_buf[lsb_ix]; ls_sum -= ls_old*ls_old; 
     if( in_chan_ix >= hls ) {
-      int32_t const out_chan_ix = in_chan_ix - hls;
-      float const scale_base = (((float)%(k)) + ls_sum*alpha_over_ls);
-      if( %(emit_out_scale_base) ) { out_scale_base[out_base_ix + out_chan_ix*%(out_chan_stride)] = scale_base; }
-      float const scale = powf( scale_base, -%(beta) );
-      out[out_base_ix + out_chan_ix*%(out_chan_stride)] = ls_buf[(lsb_ix+%(local_size)-hls) %% %(local_size)] * scale;
+      const int32_t out_buf_chan_ix = in_chan_ix - hls;
+      const float scale_base = (( FLOAT_CAST %(k)) + ls_sum*alpha_over_ls);
+      if( %(emit_out_buf_scale_base) != 0) { out_buf_scale_base[out_buf_base_ix + out_buf_chan_ix*%(out_buf_chan_stride)] = scale_base; }
+      const float scale = powf( scale_base, -%(beta) );
+      out_buf[out_buf_base_ix + out_buf_chan_ix*%(out_buf_chan_stride)] = ls_buf[(lsb_ix+%(local_size)-hls) %% %(local_size)] * scale;
     }
   }
 #else
-  for( int32_t in_chan_ix = 0; in_chan_ix < %(out_chan_dim) + hls; ++in_chan_ix ) {
-    int32_t const in_off = in_chan_ix*%(out_chan_stride);
+  for( int32_t in_chan_ix = 0; in_chan_ix < %(out_buf_chan_dim) + hls; ++in_chan_ix ) {
+    int32_t const in_off = in_chan_ix*%(out_buf_chan_stride);
     int32_t const lsb_ix = in_chan_ix %% %(local_size);
-    ls_buf[lsb_ix] = (in_chan_ix < %(out_chan_dim)) ? in[out_base_ix + in_off] : 0.0f;
+    ls_buf[lsb_ix] = (in_chan_ix < %(out_buf_chan_dim)) ? in[out_buf_base_ix + in_off] : 0.0f;
     if( in_chan_ix >= hls ) {
-      int32_t const out_chan_ix = in_chan_ix - hls;
+      int32_t const out_buf_chan_ix = in_chan_ix - hls;
       ls_sum = 0.0f;
       for( int32_t i = 0; i != %(local_size); ++i ) { ls_sum += ls_buf[i]*ls_buf[i]; }
       //float const scale = powf( (%(k) + %(alpha)*ls_sum/%(local_size)), -%(beta) );
       float const scale_base = (((float)%(k)) + ls_sum*((float)%(alpha))/%(local_size));
-      if( %(emit_out_scale_base) ) { out_scale_base[out_base_ix + out_chan_ix*%(out_chan_stride)] = scale_base; }
+      if( %(emit_out_buf_scale_base) ) { out_buf_scale_base[out_buf_base_ix + out_buf_chan_ix*%(out_buf_chan_stride)] = scale_base; }
       float const scale = powf( scale_base, -((float)%(beta)) );
-      out[out_base_ix + out_chan_ix*%(out_chan_stride)] = ls_buf[(lsb_ix+%(local_size)-hls) %% %(local_size)] * scale;
+      out[out_buf_base_ix + out_buf_chan_ix*%(out_buf_chan_stride)] = ls_buf[(lsb_ix+%(local_size)-hls) %% %(local_size)] * scale;
     }
   }
 #endif

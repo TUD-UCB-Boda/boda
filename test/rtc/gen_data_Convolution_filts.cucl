@@ -1,8 +1,27 @@
+#ifdef GLSL
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+#endif
 // CUCL INCLUDE gen-util.h
+#ifdef GLSL
+layout(set = 0, binding = 0) buffer filts_t{
+  float filts[];
+};
+
+layout (set = 0, binding = 1) buffer POD
+{
+  uint32_t mode;
+  float vi;
+  %(cucl_arg_info_decls)
+};
+
+
+void main()
+#else
 CUCL_GLOBAL_KERNEL void %(rtc_func_name)( uint32_t const mode, // CUCL IN :
                                           float const vi, // CUCL IN :
                                           GASQ float * const filts // CUCL OUT_DYN out_chan:in_chan:y:x
                                           %(cucl_arg_info_decls) )
+#endif					  
 {
   // CUCL IX GLOB_ID_1D filts
   if( GLOB_ID_1D >= %(filts_dims_prod) ) { return; }

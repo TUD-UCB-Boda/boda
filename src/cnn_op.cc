@@ -21,6 +21,7 @@ namespace boda
     bool const enable_ipconv = op_tune->ipconv;
     bool const enable_k1conv = op_tune->k1conv;
     bool const enable_tconv = op_tune->tconv;
+    bool const enable_sconv = op_tune->sconv;
     bool const force_enable_tconv = (op_tune->tconv==2);
     dims_t ni_dims;
     dims_t no_dims = op->get_dims( op->coi->top_an(0) );
@@ -34,7 +35,7 @@ namespace boda
     if( is_conv || is_pool || op->is( Spreading_coi ) || op->is( BckConv_coi ) ) {
       assert_st( !ni_dims.empty() );
       in_dims = ni_dims;
-      op->set_dims("in_ref",in_dims); // tconv needs the standard input dims for reference
+      op->set_dims("in_buf_ref",in_dims); // tconv and sconv need the standard input dims for reference
       u32_pt_t kern_sz_;
       if( op->has("kern_sz") ) { kern_sz_ = op->kern_sz(); }
       else {
@@ -61,6 +62,9 @@ namespace boda
                                                           && (kern_sz_.both_dims_ge(u32_pt_t{1,1}) && (no_sz.d[0] >= 6))))) {
           op->set_func_name( tconv_str );
         }
+	else if (enable_sconv) {
+	  op->set_func_name( sconv_str);
+	}
         else { 
           if( op_tune->use_local_mem == 2 ) { op->set_func_name( conv_simd_str ); }
           else { op->set_func_name( conv_str ); }
@@ -289,18 +293,84 @@ namespace boda
             vect_string{"in_chan","y","x","out_chan"}, op->get_dims("filts").tn )); 
 	  op->reset_dims("out",dims_t( vect_uint32_t{ out_chan_pad, pels_sz_pad }, vect_string{"chan","pel"}, 
                                      op->get_dims("out").tn )); 
-        }
+        } else if (op->get_func_name() == sconv_str) {
+	  dims_t work_in;
+	  work_in.add_dims("img", in_dims.dsz("img"));
+	  work_in.add_dims("yconvs", no_dims.dsz("y"));
+	  work_in.add_dims("xconvs", no_dims.dsz("x"));
+	  work_in.add_dims("chan", in_dims.dsz("chan"));
+	  work_in.tn = "none";
+	  work_in.calc_strides();
+	  op->set_dims("work_in", work_in);
+	  
+	  dims_t filt_sz;
+	  filt_sz.add_dims("y", op->get_dims("filts").dsz("y"));
+	  filt_sz.add_dims("x", op->get_dims("filts").dsz("x"));
+	  filt_sz.tn = "none";
+	  filt_sz.calc_strides();
+	  op->set_dims("filt_sz", filt_sz);
+	  dims_t out_sz = no_dims;
+	  out_sz.tn = "none";
+	  op->set_dims("out_sz", out_sz);
+
+	  int K = in_dims.dsz("chan")*filt_sz.dsz("x")*filt_sz.dsz("y");
+	  int M = no_dims.dsz("chan");
+	  int N = no_dims.dsz("x")*no_dims.dsz("y")*no_dims.dsz("img");
+
+	  dims_t new_in;
+	  new_in.add_dims("K", K);
+	  new_in.add_dims("N", N);
+	  new_in.tn = "float";
+	  new_in.calc_strides();
+	  in_dims = new_in;
+
+	  dims_t new_filts;
+	  new_filts.add_dims("K", K);
+	  new_filts.add_dims("M", M);
+	  new_filts.tn = "float";
+	  new_filts.calc_strides();
+	  op->reset_dims("filts", new_filts);
+
+	  dims_t new_out;
+	  new_out.add_dims("M", M);
+	  new_out.add_dims("N", N);
+	  new_out.tn = "float";
+	  new_out.calc_strides();
+	  op->reset_dims("out_buf", new_out);
+	  
+	  uint64_t const M_blk = op_tune->MNb.d[0] * op_tune->MNt.d[0];
+	  uint64_t const N_blk = op_tune->MNb.d[1] * op_tune->MNt.d[1];
+	  uint64_t const Mg = M / M_blk;
+	  uint64_t const Ng = N / N_blk;
+	  if( Mg * M_blk != M ) { 
+	    rt_err( strprintf( "FIXME: currently, M=%s must be a multiple of M_blk=%s\n", 
+			       str(M).c_str(), str(M_blk).c_str() ) );
+	  }
+	  if( Ng * N_blk != N ) { 
+	    rt_err( strprintf( "FIXME: currently, N=%s must be a multiple of N_blk=%s\n", 
+			       str(N).c_str(), str(N_blk).c_str() ) );
+	  }
+	  if( K % op_tune->Kb ) { 
+	    rt_err( strprintf( "FIXME: currently, K=%s must be a multiple of Kb=%s\n", 
+			       str(K).c_str(), str(op_tune->Kb).c_str() ) );
+	  }
+
+	  dims_t new_work{ {(uint32_t)Mg,(uint32_t)Ng,op_tune->MNb.d[0],op_tune->MNb.d[1],op_tune->Kb,
+		op_tune->MNt.d[0],op_tune->MNt.d[1]}, {"Mg","Ng","Mb","Nb","Kb","Mt","Nt"}, "none" };
+	  work = new_work;
+	  
+	}
 	op->set_dims("work",work);
-	// k1conv and in_tile_xpose need the standard output dims for reference. curently this == the dims of "out",
+	// k1conv and in_tile_xpose need the standard output dims for reference. curently this == the dims of "out_buf",
 	// but a later pass might change the desired output format by changing the "out" dims. however, the "out_ref"
 	// dims will remain unchanged at this value.
-	op->set_dims("out_ref",no_dims); 
+	op->set_dims("out_buf_ref",no_dims); 
 	// set final desired format for input. note: (1) original 'standard' format is stored as "in_ref" earlier (2)
-	// the dims of "in" may now differ from the dims of the global/rtc variable in the arg_map that "in" is bound
+	// the dims of "in_buf" may now differ from the dims of the global/rtc variable in the arg_map that "in_buf" is bound
 	// to. our convention is that we expect or detect this in codegen and emit the need xform at that point. when
-	// we do this, we may change the binding for "in" (e.g. to point to an xformed version of the original
+	// we do this, we may change the binding for "in_buf" (e.g. to point to an xformed version of the original
 	// variable).
-        op->reset_dims("in",in_dims); 
+        op->reset_dims("in_buf",in_dims); 
         if( is_k1_or_t_or_reg_conv( op->get_func_name() ) ) {
           op->reset_dims("filts",dims_t( vect_uint32_t{ work.dsz("out_chan_blk"),ni_dims.dsz("chan"), 
                   kern_sz_.d[1], kern_sz_.d[0],

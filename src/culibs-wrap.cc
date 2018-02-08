@@ -98,8 +98,8 @@ namespace boda
       op_base_t const & op = fi.op;
       p_nda_t filts = get_arg( arg_map, "filts" );
       p_nda_t biases = get_arg( arg_map, "biases" );
-      p_nda_t in = get_arg( arg_map, "in" );
-      p_nda_t out = get_arg( arg_map, "out" );
+      p_nda_t in = get_arg( arg_map, "in_buf" );
+      p_nda_t out = get_arg( arg_map, "out_buf" );
       cudnn_filter_t cu_filts;
       cudnn_tensor_t cu_in;
       cudnn_tensor_t cu_out;

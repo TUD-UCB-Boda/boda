@@ -239,7 +239,7 @@ namespace boda
   }
 
   string dyn_dims( string const & vn, dims_t const & dims, uint32_t const & dix ) {
-    return strprintf( "cai__%s_%s", vn.c_str(), dims[dix].name.c_str() );
+    return strprintf( "cai_%s_%s", vn.c_str(), dims[dix].name.c_str() );
   }
 
   void insert_nda_dyn_ix_exprs( map_str_str & mss, string const & ix_vn, dims_t const & dims, string ix_expr ) {
@@ -437,9 +437,9 @@ namespace boda
     if( dyn_arg_names ) { set( nda_vn+"_tn", str(dims.tn) ); }
     for( uint32_t i = 0; i != dims.sz(); ++i ) {
       string const vn_dim = nda_vn+"_"+dims[i].name+"_dim";
-      string const vn_dim_decl = "cai__" + vn_dim;
+      string const vn_dim_decl = "cai_" + vn_dim;
       if( dyn_arg_names ) {
-        line( "cucl_arg_info_decls", "," + cai_tn() + " " + vn_dim_decl );
+        line( "cucl_arg_info_decls", " START_ARG " + cai_tn() + " " + vn_dim_decl + " END_ARG" );
         dyn_arg_names->push_back( vn_dim_decl );
         if( add_ref_templates ) { set( vn_dim, vn_dim_decl ); }
       }
@@ -447,9 +447,9 @@ namespace boda
       if( !dims_only ) { 
         //assert_st( dims[i].has_sz_and_stride_and_name() );
         string const vn_stride = nda_vn+"_"+dims[i].name+"_stride";
-        string const vn_stride_decl = "cai__" + vn_stride;
+        string const vn_stride_decl = "cai_" + vn_stride;
         if( dyn_arg_names ) {
-          line( "cucl_arg_info_decls", "," + cai_tn() + " " + vn_stride_decl );
+          line( "cucl_arg_info_decls", " START_ARG " + cai_tn() + " " + vn_stride_decl + " END_ARG " );
           dyn_arg_names->push_back( vn_stride_decl );
           if( add_ref_templates ) { set( vn_stride, vn_stride_decl ); }
         }
@@ -458,9 +458,9 @@ namespace boda
     }
     if( !dims_only ) { 
       string const vn_dims_prod = nda_vn+"_dims_prod";
-      string const vn_dims_prod_decl = "cai__" + vn_dims_prod;
+      string const vn_dims_prod_decl = "cai_" + vn_dims_prod;
       if( dyn_arg_names ) {
-        line( "cucl_arg_info_decls", "," + cai_tn() + " " + vn_dims_prod_decl );
+        line( "cucl_arg_info_decls", " START_ARG " + cai_tn() + " " + vn_dims_prod_decl + " END_ARG ");
         dyn_arg_names->push_back( vn_dims_prod_decl );
         if( add_ref_templates ) { set( vn_dims_prod, vn_dims_prod_decl ); }
       }
@@ -639,7 +639,9 @@ namespace boda
     if( compile_pend.empty() ) { return; } 
     vect_rtc_func_info_t rtc_prog_infos;
     for( vect_p_rtc_call_gen_t::const_iterator i = compile_pend.begin(); i != compile_pend.end(); ++i ) {
-      rtc_prog_infos.push_back( {(*i)->gen_fn,(*i)->rtc_prog_str,(*i)->arg_names,(*i)->op} );
+      rtc_prog_infos.push_back( {(*i)->gen_fn,(*i)->rtc_prog_str,(*i)->arg_names,
+	    (*i)->op, (*i)->rtc_func_template->arg_decls,
+	    (*i)->rtc_call_geom.tpb ? (*i)->rtc_call_geom.tpb : (*i)->rtc_call_geom.get_default_tpb()});
       (*i)->is_compiled.v = 1; // well, or at least we're going to *try* to compile this func anyway ...
     }
     //printf( "rtc_prog_infos=%s\n", str(rtc_prog_infos).c_str() );

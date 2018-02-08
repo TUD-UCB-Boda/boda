@@ -1,0 +1,61 @@
+#ifdef GLSL
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+layout(set = 0, binding = 0) readonly buffer in_buf_ref_t{
+  float in_buf_ref[];
+};
+layout(set = 0, binding = 1)  buffer in_buf_t{
+  float in_buf[];
+};
+
+layout (set = 0, binding = 2) buffer POD
+{
+  int stride;
+  int in_pad;
+  int filt_sz;
+  int out_sz;
+  int work_in;
+};
+
+void main()
+#else
+CUCL_GLOBAL_KERNEL void %(rtc_func_name)( GASQ float const * const in_buf_ref, // CUCL IN img:chan:y:x
+					  GASQ float * const in_buf, // CUCL OUT K:N
+					  GASQ void const * const stride, // CUCL REF y:x
+					  GASQ void const * const in_pad, // CUCL REF y:x
+					  GASQ void const * const filt_sz, // CUCL REF y:x
+					  GASQ void const * const out_sz, // CUCL REF img:chan:y:x
+					  GASQ void const * const work_in ) // CUCL REF img:yconvs:xconvs:chan
+#endif					  
+{
+  // CUCL IX GLOB_ID_1D work_in
+    if( GLOB_ID_1D >= %(work_in_dims_prod) ) { return; }	
+  uint32_t start_x = %(GLOB_ID_1D_xconvs)*%(stride_x_dim);
+  uint32_t start_y = %(GLOB_ID_1D_yconvs)*%(stride_y_dim);
+  uint32_t in_row_size = %(in_buf_ref_x_dim);
+  uint32_t channel_size = in_row_size*%(in_buf_ref_y_dim);
+  uint32_t img_size = channel_size*%(in_buf_ref_chan_dim);
+
+  uint32_t mat_row_sz = %(out_sz_x_dim)*%(out_sz_y_dim)*%(out_sz_img_dim);
+  uint32_t filt_len = %(filt_sz_x_dim) * %(filt_sz_y_dim);
+  
+  for (uint32_t kern_y = 0; kern_y < %(filt_sz_y_dim); kern_y++) {
+      for (uint32_t kern_x = 0; kern_x < %(filt_sz_x_dim); kern_x++) {
+      	  float val;
+      	  uint x = start_x + kern_x;
+	  uint y = start_y + kern_y;
+	  if (x < %(in_pad_x_dim) ||
+	      y < %(in_pad_y_dim) ||
+ 	      x >= %(in_buf_ref_x_dim)+%(in_pad_x_dim) ||
+ 	      y >= %(in_buf_ref_y_dim)+%(in_pad_y_dim)) {
+
+	    val = 0.0;
+	  } else { 
+	    val = in_buf_ref[%(GLOB_ID_1D_img)*img_size+%(GLOB_ID_1D_chan)*channel_size+y*in_row_size+x];  
+	  }
+	  in_buf[mat_row_sz*(%(GLOB_ID_1D_chan)*filt_len+kern_y*%(filt_sz_x_dim)+kern_x) +
+	      	%(GLOB_ID_1D_img)*%(out_sz_y_dim)*%(out_sz_x_dim)+
+	  	%(GLOB_ID_1D_yconvs)*%(out_sz_x_dim) + %(GLOB_ID_1D_xconvs)]
+			= val;
+      }
+  }
+}

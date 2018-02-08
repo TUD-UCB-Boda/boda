@@ -1,0 +1,21 @@
+#ifdef GLSL
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+layout(set = 0, binding = 0) readonly buffer filts_ref_t{
+  float filts_ref[];
+};
+layout(set = 0, binding = 1)  buffer filts_t{
+  float filts[];
+};
+void main()
+#else
+CUCL_GLOBAL_KERNEL void %(rtc_func_name)( GASQ float const * const filts_ref, // CUCL IN out_chan:in_chan:y:x
+					  GASQ float * const filts) // CUCL OUT K:M
+#endif					  
+{
+  // CUCL IX GLOB_ID_1D filts_ref
+  if( GLOB_ID_1D >= %(filts_ref_dims_prod) ) { return; }	
+  float val = filts_ref[GLOB_ID_1D];
+  uint32_t filts_ix = %(filts_ref_out_chan_dim)*(%(GLOB_ID_1D_in_chan)*%(filts_ref_in_chan_stride) + %(GLOB_ID_1D_y)*%(filts_ref_y_stride) + %(GLOB_ID_1D_x)) + %(GLOB_ID_1D_out_chan);
+  filts[filts_ix] = val;
+
+}

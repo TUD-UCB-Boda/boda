@@ -30,8 +30,8 @@ namespace boda
 
   conv_op_info_t const clone_coi{ "clone", {"in"}, {"out"}, };
   conv_op_info_t const sgemm_coi{ "sgemm", {"a","b"}, {"c"}, };
-  conv_op_info_t const Pooling_coi{ "Pooling", {"in"}, {"out"}, DefaultPoolingVals };
-  conv_op_info_t const Convolution_coi{ "Convolution", { "in", "filts", "biases" }, { "out" }, DefaultConvolutionVals };
+  conv_op_info_t const Pooling_coi{ "Pooling", {"in_buf"}, {"out_buf"}, DefaultPoolingVals };
+  conv_op_info_t const Convolution_coi{ "Convolution", { "in_buf", "filts", "biases" }, { "out_buf" }, DefaultConvolutionVals };
   conv_op_info_t const Deconvolution_coi{ "Deconvolution", { "in", "filts", "biases" },{ "out" }, DefaultConvolutionVals };
   conv_op_info_t const ReLU_coi{ "ReLU", {"in"}, {"out"} };
   conv_op_info_t const Scale_coi{ "Scale", {"in"}, {"out"} };
@@ -40,19 +40,19 @@ namespace boda
   conv_op_info_t const BckDropout_coi{ "BckDropout", {"in"}, {"out"}, {{"dropout_ratio",make_scalar_nda(0.5f)}} };
 
   map_str_p_nda_t const DefaultLRNVals{
-    {"emit_out_scale_base",make_scalar_nda<uint32_t>(0)},
+    {"emit_out_buf_scale_base",make_scalar_nda<uint32_t>(0)},
     {"local_size",make_scalar_nda<uint32_t>(5)},
     {"alpha",make_scalar_nda(1.0f)},
     {"beta",make_scalar_nda(0.75f)},
     {"k",make_scalar_nda(1.0f)}
   };
-  conv_op_info_t const LRN_coi{ "LRN", {"in"}, {"out"}, DefaultLRNVals };
+  conv_op_info_t const LRN_coi{ "LRN", {"in_buf"}, {"out_buf"}, DefaultLRNVals };
   conv_op_info_t const BckLRN_coi{ "BckLRN", {"in","out","out_grad_loss"}, {"in_grad_loss"}, DefaultLRNVals };
   conv_op_info_t const Accuracy_coi{ "Accuracy", {"in"}, {"out"} };
   conv_op_info_t const Softmax_coi{ "Softmax", {"in"}, {"prob"} };
   conv_op_info_t const SoftmaxWithLoss_coi{ "SoftmaxWithLoss", { "in", "label" },{ "in_grad_loss", "loss" } };
   conv_op_info_t const Data_coi{ "Data", {}, {"out"} }; // note: no inputs / source
-  conv_op_info_t const Concat_coi{ "Concat", {"ins"}, {"out"}, {}, zi_bool(1) };
+  conv_op_info_t const Concat_coi{ "Concat", {"in_bufs"}, {"out_buf"}, {}, zi_bool(1) };
   conv_op_info_t const Eltwise_coi{ "Eltwise", {"ins"}, {"out"}, {}, zi_bool(1) };
   conv_op_info_t const Reduce_coi{ "Reduce", {"ins"}, {"out"}, {}, zi_bool(1) };
   conv_op_info_t const Split_coi{ "Split", {"in"}, {"outs"}, {}, zi_bool(0), zi_bool(1) };
@@ -805,7 +805,7 @@ namespace boda
       bcop->bots[0] += "_grad_loss";
       for( uint32_t i = 0; i != bcop->tops.size(); ++i ) { bcop->tops[i] = get_grad_loss_onn( cop, bcop->tops[i] ); }
     } else if( cop->is( LRN_coi ) ) {
-      cop->erase( "emit_out_scale_base" ); cop->set_u32( "emit_out_scale_base", 1 );
+      cop->erase( "emit_out_buf_scale_base" ); cop->set_u32( "emit_out_buf_scale_base", 1 );
       bcop.reset( new conv_op_t );
       *bcop = *cop;
       bcop->coi = 0;

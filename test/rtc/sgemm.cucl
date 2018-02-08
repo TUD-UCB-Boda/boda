@@ -1,26 +1,54 @@
+#ifdef GLSL
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+layout(set = 0, binding = 0) readonly buffer matrix_a{
+  %(a_tn) a[];
+};
+layout(set = 0, binding = 1) readonly buffer matrix_b{
+  %(b_tn) b[];
+};
+layout(set = 0, binding = 2) buffer matrix_c{
+  %(c_tn) c[];
+};
+
+layout (set = 0, binding = 3) buffer POD
+{
+  int work;
+};
+
+shared float a_sm[%(a_sm_sz)];
+shared float b_sm[%(b_sm_sz)];
+void main()
+#else
 CUCL_GLOBAL_KERNEL void %(rtc_func_name)( GASQ %(a_tn) const * const a, // CUCL IN K:M
 					  GASQ %(b_tn) const * const b, // CUCL IN K:N
 					  GASQ %(c_tn) * const c,  // CUCL OUT M:N
 					  GASQ void const * const work )  // CUCL REF Mg:Ng:Mb:Nb:Kb:Mt:Nt
+#endif
 {
   // CUCL IX GRP_ID_1D work use_dims=Mg:Ng
   // CUCL IX LOC_ID_1D work use_dims=Mb:Nb
   // note: <each thread handles> work use_dims=Mt:Nt output points;loops over K with unrollingfactor of Kb
   // FIXME: for now, we assume Kb == 1
+  #ifdef GLSL
+  float c_r[%(work_Mt_dim)*%(work_Nt_dim)]; // tile of output for this thread to compute, stored in registers
+  for (int i = 0; i < %(work_Mt_dim)*%(work_Nt_dim); i++)
+      c_r[i] = 0.0;
+  #else
   LOCSHAR_MEM float a_sm[%(a_sm_sz)];
   LOCSHAR_MEM float b_sm[%(b_sm_sz)];
   float c_r[%(work_Mt_dim)*%(work_Nt_dim)] = {0}; // tile of output for this thread to compute, stored in registers
+  #endif
   float a_r[%(work_Mt_dim)]; 
   float b_r[%(work_Nt_dim)];
 
   // block-level constant offsets into a + b, each plus the thread id (LOC_ID_1D), for shared-memory loading
-  int32_t a_off = %(GRP_ID_1D_Mg)*%(work_Mb_dim)*%(work_Mt_dim)*%(a_M_stride) + LOC_ID_1D;
-  int32_t const b_off_base = %(GRP_ID_1D_Ng)*%(work_Nb_dim)*%(work_Nt_dim)*%(b_N_stride) + LOC_ID_1D;
+  uint32_t a_off = %(GRP_ID_1D_Mg)*%(work_Mb_dim)*%(work_Mt_dim)*%(a_M_stride) + LOC_ID_1D;
+  const uint32_t  b_off_base = %(GRP_ID_1D_Ng)*%(work_Nb_dim)*%(work_Nt_dim)*%(b_N_stride) + LOC_ID_1D;
     
-  LSMASQ float * const a_sm_off = a_sm + %(LOC_ID_1D_Mb)*%(work_Mt_dim);
-  LSMASQ float * const b_sm_off = b_sm + %(LOC_ID_1D_Nb)*%(work_Nt_dim);
+  const uint32_t a_sm_off = %(LOC_ID_1D_Mb)*%(work_Mt_dim);
+  const uint32_t b_sm_off = %(LOC_ID_1D_Nb)*%(work_Nt_dim);
 
-  int32_t b_off = b_off_base;
+  uint32_t b_off = b_off_base;
   //LSMASQ %(a_tn) * const a_sm_off = a_sm + %(LOC_ID_1D_Mb)*%(work_Mt_dim)*%(work_Kb_dim) + %(LOC_ID_1D_Nb);
   for( int32_t k = 0; k < %(a_K_dim); k += %(work_Kb_dim) ) {
     //b_off = b_off_base + k*%(work_Kb_dim)*%(b_K_stride); // FIXME: adding this line fixes 512x512 case on SD820 ...
@@ -32,7 +60,7 @@ CUCL_GLOBAL_KERNEL void %(rtc_func_name)( GASQ %(a_tn) const * const a, // CUCL 
     %(inner_loop_body);
   }
 
-  int32_t c_off = // thread-level offset into c
+  uint32_t c_off = // thread-level offset into c
     (%(GRP_ID_1D_Mg)*%(work_Mb_dim)+%(LOC_ID_1D_Mb))*%(work_Mt_dim)*%(c_M_stride) + 
     (%(GRP_ID_1D_Ng)*%(work_Nb_dim)+%(LOC_ID_1D_Nb))*%(work_Nt_dim)*%(c_N_stride);
 

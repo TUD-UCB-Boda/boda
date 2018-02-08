@@ -44,20 +44,6 @@ namespace boda
   struct cnn_custom_codegen_t; typedef shared_ptr< cnn_custom_codegen_t > p_cnn_custom_codegen_t;
   p_custom_codegen_t make_cnn_custom_codegen_t( void );
 
-  struct arg_decl_t {
-    string vn;
-    zi_bool multi;
-    string tn;
-    zi_uint32_t loi;
-    string io_type;
-    zi_bool dyn;
-    vect_dims_t ok_dims;
-    void set_vn_tn( string const & vn_, string const & tn_ );
-    void ref_parse( string const & line );
-    void arg_parse( string const & line );
-    uint32_t get_multi_sz( op_base_t const & op ) const;
-    string get_multi_vn( uint32_t const mix ) const;
-  };
   inline std::ostream & operator << ( std::ostream & out, arg_decl_t const & o ) {
     for( vect_dims_t::const_iterator i = o.ok_dims.begin(); i != o.ok_dims.end(); ++i ) {
       out << strprintf( "%s --- vn=%s tn=%s loi=%s io_type=%s ", str(*i).c_str(), str(o.vn).c_str(), 
@@ -65,26 +51,6 @@ namespace boda
     }
     return out;
   }
-  struct vect_arg_decl_t : public vector< arg_decl_t > {
-    struct multi_iter {
-      iterator i;
-      iterator e;
-      op_base_t const * op;
-      uint32_t msz_;
-      uint32_t mix;
-      string vn_;
-      bool at_end( void ) const { return i == e; }
-      uint32_t msz( void ) { if( !msz_ ) { msz_ = i->get_multi_sz( *op ); } return msz_; }
-      void operator ++( void ) { 
-        assert_st( mix < msz() ); 
-        if( mix < (msz()-1) ) { ++mix; vn_.clear(); return; }
-        msz_ = 0; mix = 0; vn_.clear(); ++i;
-      }
-      string & vn( void ) { if( vn_.empty() ) { vn_ = i->get_multi_vn( mix ); assert_st( !vn_.empty() ); } return vn_; }
-      arg_decl_t & ad( void ) { return *i; } 
-    };
-    multi_iter multi_begin( op_base_t const * const op ) { return multi_iter{begin(),end(),op,0,0}; }
-  };
   
   struct ix_decl_t {
     string ix_vn;

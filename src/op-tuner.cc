@@ -248,8 +248,8 @@ namespace boda
       //uint64_t forward_bytes;
       uint64_t forward_flops;
 
-      dout = op->get_dims("out");
-      din = op->get_dims("in");
+      dout = op->get_dims("out_buf");
+      din = op->get_dims("in_buf");
       B = din.dsz( "img" );
       assert_st( B == dout.dsz("img" ) );
       // AI-related calculations
@@ -278,7 +278,7 @@ namespace boda
 
       regex r_plat( s_plat );
       for( p_op_wisdom_t owi; owi = read_next_wisdom( win ); ) { 
-        if( s_img && (owi->op->get_dims("in").dsz("img") != s_img) ) { continue; } // filter by # imgs (permanent)
+        if( s_img && (owi->op->get_dims("in_buf").dsz("img") != s_img) ) { continue; } // filter by # imgs (permanent)
         if( !(get_op_flops(owi->op) >= min_flops ) ) { continue; } // filter by min_flops (permanent)
 
         owi->kgs.clear(); // no need for kgs

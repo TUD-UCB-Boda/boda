@@ -7,6 +7,7 @@
 # dependency section may be empty. however, it will still function in order to disable particular object files from
 # being built if desired. note: the results of processing this file will be written to the file: dependencies.make
 
+
 [base] # special basic setup / global dependencies; always enabled, will always be emmited first in dependencies.make
 VPATH := $(VPATH) ../src ../src/ext
 CPP := g++
@@ -21,7 +22,7 @@ LDFLAGS := $(LDFLAGS) -llmdb
 CPPFLAGS := $(CPPFLAGS) -I/usr/include/octave-4.0.0 -I/usr/include/octave-4.0.0/octave
 LDFLAGS := $(LDFLAGS) -loctave -loctinterp
 
-[SDL2]
+[SDL2 disable]
 CPPFLAGS := $(CPPFLAGS) -I/usr/include/SDL2 -I/usr/local/include/SDL2
 LDFLAGS := $(LDFLAGS) -lSDL2 -lSDL2_ttf -lrt
 
@@ -44,7 +45,7 @@ caffe.pb.cc caffe.pb.h : ../src/ext/caffe.proto
 	$(PROTOC) -I../src/ext --cpp_out=. ../src/ext/caffe.proto
 
 
-[cuda]
+[cuda disable]
 CUDA_HOME := /usr/local/cuda
 CPPFLAGS := $(CPPFLAGS) -I$(CUDA_HOME)/include
 CUDA_LIB = $(CUDA_HOME)/lib64
@@ -53,14 +54,20 @@ LDFLAGS := $(LDFLAGS) -L$(CUDA_LIB) -lcudart -lcurand -lcuda
 # if you prefer to use LD_LIBRARY_PATH or other methods, comment out the following line:
 LDFLAGS := $(LDFLAGS) -Wl,-rpath,$(CUDA_LIB)
 
-[culibs needs=cuda]
+[culibs disable] #needs=cuda]
 LDFLAGS := $(LDFLAGS) -lcublas -lcudnn
 
-[nvrtc needs=cuda]
+[nvrtc disable] #needs=cuda]
 LDFLAGS := $(LDFLAGS) -lnvrtc
 
 [opencl]
 LDFLAGS := $(LDFLAGS) -lOpenCL
+
+[vulkan] # XXX make this work in general
+VULKAN_SDK_PATH:=/home/jschulte/vulkan/VulkanSDK/1.0.49.0/x86_64
+SHADERC_PATH:= /home/jschulte/vulkan_backend/shaderc
+CPPFLAGS := $(CPPFLAGS) -I$(VULKAN_SDK_PATH)/include/vulkan -I$(SHADERC_PATH)/libshaderc/include
+LDFLAGS := $(LDFLAGS) -L$(VULKAN_SDK_PATH)/lib -lvulkan -L$(SHADERC_PATH)/build/libshaderc -l:libshaderc_combined.a
 
 [caffe needs=cuda needs=caffe_pb]
 CAFFE_HOME := /mnt/nfs/home/moskewcz/git-work/caffe
@@ -140,6 +147,7 @@ rtc_ipc.o
 rtc_fwd.o
 rtc_compute.o
 ocl_util.o opencl
+vk_util.o vulkan
 caffe_fwd.o caffe_pb caffe
 has_conv_fwd.o
 nvrtc_util.o nvrtc
