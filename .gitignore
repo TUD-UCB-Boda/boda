@@ -26,5 +26,6 @@ lib2
 *.pyc
 .idea
 cmake-build-debug
+.DS_Store
 *~
 
