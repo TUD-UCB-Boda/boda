@@ -86,8 +86,7 @@ namespace boda {
     typedef shared_ptr<img_pyra_pack_t> p_img_pyra_pack_t;
     typedef vector<p_img_pyra_pack_t> vect_p_img_pyra_pack_t;
 
-    struct img_pyra_pack_cli_t
-            : virtual public nesi, public img_pyra_pack_t, public pyra_params_t, public has_main_t // NESI(
+    struct img_pyra_pack_cli_t : virtual public nesi, public img_pyra_pack_t, public pyra_params_t, public has_main_t // NESI(
         // help="image pyramid packing",
         // bases=["img_pyra_pack_t","pyra_params_t","has_main_t"],
         // type_id="img_pyra_pack")

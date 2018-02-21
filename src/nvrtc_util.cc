@@ -189,8 +189,7 @@ float const FLT_MIN = 1.175494350822287507969e-38f;
 
 )rstr";
 
-    struct nvrtc_compute_t
-            : virtual public nesi, public rtc_compute_t // NESI(help="libnvrtc based rtc support (i.e. CUDA)",
+    struct nvrtc_compute_t : virtual public nesi, public rtc_compute_t // NESI(help="libnvrtc based rtc support (i.e. CUDA)",
         // bases=["rtc_compute_t"], type_id="nvrtc" )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

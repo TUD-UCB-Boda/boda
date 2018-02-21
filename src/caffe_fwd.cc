@@ -37,8 +37,7 @@ namespace boda {
         }
     }
 
-    struct caffe_fwd_t
-            : virtual public nesi, public has_conv_fwd_t // NESI(help="compute conv pipe forward using caffe",
+    struct caffe_fwd_t : virtual public nesi, public has_conv_fwd_t // NESI(help="compute conv pipe forward using caffe",
         // bases=["has_conv_fwd_t"], type_id="caffe" )
 
     {

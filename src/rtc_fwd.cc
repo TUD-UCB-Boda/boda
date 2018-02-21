@@ -42,8 +42,7 @@ namespace boda {
 
     typedef set<op_base_t> set_op_base_t;
 
-    struct conv_pipe_fwd_t
-            : virtual public nesi, public has_conv_fwd_t // NESI(help="compute conv pipe forward using rtc",
+    struct conv_pipe_fwd_t : virtual public nesi, public has_conv_fwd_t // NESI(help="compute conv pipe forward using rtc",
         // bases=["has_conv_fwd_t"], type_id="rtc" )
 
     {

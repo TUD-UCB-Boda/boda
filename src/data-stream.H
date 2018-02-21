@@ -104,8 +104,7 @@ namespace boda {
         p_nda_t val;
     };
 
-    struct data_stream_t
-            : virtual public nesi // NESI(help="modes that can be used for reading streams of timestamped data blocks"
+    struct data_stream_t : virtual public nesi // NESI(help="modes that can be used for reading streams of timestamped data blocks"
         // ,is_abstract=1,tid_vn="mode")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

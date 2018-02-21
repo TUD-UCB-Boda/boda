@@ -20,8 +20,7 @@ namespace boda {
     // matching cnet_ana+flops.py command line:
     // boda cnet_ana --in-model=nin_imagenet_nopad --print-ops=1 --in-dims='(img=1)' && python ../../pysrc/flops.py --per-layer=1 --ai-mnk=1 --per-layer-in-info=1
 
-    struct test_compute_multi_t
-            : virtual public nesi, public has_main_t // NESI( help="comparison test 2 CNN computation methods",
+    struct test_compute_multi_t : virtual public nesi, public has_main_t // NESI( help="comparison test 2 CNN computation methods",
         // bases=["has_main_t"], type_id="test_compute_multi")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -302,8 +301,7 @@ namespace boda {
 
     // normally, the output of this mode is generated automatically by a magic filename-based hack in
     // test_cmds_t. however, this mode is provided as a way to generate the file without going though test_cmds_t ...
-    struct gen_test_compute_tests_t
-            : virtual public nesi, public has_main_t // NESI( help="generate list of test_compute tests",
+    struct gen_test_compute_tests_t : virtual public nesi, public has_main_t // NESI( help="generate list of test_compute tests",
         // bases=["has_main_t"], type_id="gen_test_compute_tests")
     {
         filename_t out_fn; //NESI(default="gen_test_compute_tests.xml",help="output: xml list of tests.")

@@ -7,8 +7,7 @@
 
 namespace boda {
 
-    struct data_stream_stream_src_t
-            : virtual public nesi, public data_stream_t // NESI(help="read data blocks from a boda stream url",
+    struct data_stream_stream_src_t : virtual public nesi, public data_stream_t // NESI(help="read data blocks from a boda stream url",
         // bases=["data_stream_t"], type_id="stream-src")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -48,8 +47,7 @@ namespace boda {
         }
     };
 
-    struct data_stream_stream_sink_t
-            : virtual public nesi, public data_stream_t // NESI(help="write data blocks to a boda stream url",
+    struct data_stream_stream_sink_t : virtual public nesi, public data_stream_t // NESI(help="write data blocks to a boda stream url",
         // bases=["data_stream_t"], type_id="stream-sink")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

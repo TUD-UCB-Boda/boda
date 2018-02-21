@@ -165,8 +165,7 @@ namespace boda {
     };
 
 
-    struct data_stream_test_gen_t
-            : virtual public nesi, public data_stream_t // NESI(help="generate a data stream for testing",
+    struct data_stream_test_gen_t : virtual public nesi, public data_stream_t // NESI(help="generate a data stream for testing",
         // bases=["data_stream_t"], type_id="test-gen")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

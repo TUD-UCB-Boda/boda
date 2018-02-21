@@ -344,8 +344,7 @@ namespace boda {
     };
 
     // parse stream from text file, one block per line, with a one-line header (which is currently ignored)
-    struct data_stream_csv_t
-            : virtual public nesi, public data_stream_file_t // NESI(help="parse csv stream into data blocks",
+    struct data_stream_csv_t : virtual public nesi, public data_stream_file_t // NESI(help="parse csv stream into data blocks",
         // bases=["data_stream_file_t"], type_id="csv-src")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

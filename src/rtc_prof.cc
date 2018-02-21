@@ -511,8 +511,7 @@ namespace boda {
 
     // normally, the output of this mode is generated automatically by a magic filename-based hack in
     // test_cmds_t. however, this mode is provided as a way to generate the file without going though test_cmds_t ...
-    struct gen_ops_prof_tests_t
-            : virtual public nesi, public has_main_t // NESI( help="generate list of ops-prof tests",
+    struct gen_ops_prof_tests_t : virtual public nesi, public has_main_t // NESI( help="generate list of ops-prof tests",
         // bases=["has_main_t"], type_id="gen_ops_prof_tests")
     {
         filename_t out_fn; //NESI(default="gen_ops_prof_tests.xml",help="output: xml list of tests.")

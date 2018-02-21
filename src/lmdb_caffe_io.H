@@ -9,8 +9,7 @@
 
 namespace boda {
 
-    struct lmdb_parse_datums_t
-            : virtual public nesi, public has_main_t // NESI(help="parse caffe-style datums stored in an lmdb",
+    struct lmdb_parse_datums_t : virtual public nesi, public has_main_t // NESI(help="parse caffe-style datums stored in an lmdb",
         // bases=["has_main_t"], type_id="lmdb_parse_datums")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

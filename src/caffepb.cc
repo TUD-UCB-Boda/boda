@@ -798,8 +798,7 @@ namespace boda {
     }
 
 
-    struct cnet_bpt_dump_t
-            : virtual public nesi, public has_main_t // NESI(help="base class for utilities to modify caffe nets",
+    struct cnet_bpt_dump_t : virtual public nesi, public has_main_t // NESI(help="base class for utilities to modify caffe nets",
         // bases=["has_main_t"], type_id="cnet_bpt_dump" )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -878,8 +877,7 @@ namespace boda {
         }
     };
 
-    struct cnet_copy_t
-            : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
+    struct cnet_copy_t : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
         // bases=["cnet_mod_t","has_main_t"], type_id="cnet_copy")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -925,8 +923,7 @@ namespace boda {
     }
 
 
-    struct cnet_resize_conv_t
-            : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
+    struct cnet_resize_conv_t : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
         // bases=["cnet_mod_t","has_main_t"], type_id="cnet_resize_conv")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -992,8 +989,7 @@ namespace boda {
     };
 
     // FIXME: we might want to enhance cnet_fc_to_conv_t so that the weights file is optional.
-    struct cnet_fc_to_conv_t
-            : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
+    struct cnet_fc_to_conv_t : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
         // bases=["cnet_mod_t","has_main_t"], type_id="cnet_fc_to_conv")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -1100,8 +1096,7 @@ namespace boda {
 
     };
 
-    struct cnet_util_t
-            : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
+    struct cnet_util_t : virtual public nesi, public cnet_mod_t, public has_main_t // NESI(help="utility to modify caffe nets",
         // bases=["cnet_mod_t","has_main_t"], type_id="cnet_util")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
