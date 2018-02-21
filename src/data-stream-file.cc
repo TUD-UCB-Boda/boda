@@ -2,7 +2,6 @@
 #include"boda_tu_base.H"
 #include"data-stream-file.H"
 
-namespace boda 
-{
+namespace boda {
 #include"gen/data-stream-file.H.nesi_gen.cc"
 }

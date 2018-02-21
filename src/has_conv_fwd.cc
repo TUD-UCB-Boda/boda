@@ -3,7 +3,6 @@
 #include"str_util.H"
 #include"has_conv_fwd.H"
 
-namespace boda
-{
+namespace boda {
 #include"gen/has_conv_fwd.H.nesi_gen.cc"
 }

@@ -4,9 +4,8 @@
 
 #include"boda_base.H"
 
-namespace boda
-{
-  
+namespace boda {
+
 }
 
 #endif /* _DATA_TO_IMG_H_ */

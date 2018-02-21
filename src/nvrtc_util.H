@@ -4,8 +4,7 @@
 
 #include"boda_base.H"
 
-namespace boda 
-{
+namespace boda {
 }
 
 #endif /* _NVRTC_UTIL_H_ */

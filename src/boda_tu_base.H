@@ -4,6 +4,7 @@
 #error "boda_tu_base.h should only be include once at the start of each translation unit"
 #else
 #define BODA_TU_BASE_H
+
 #include"boda_base.H"
 
 #endif // BODA_TU_BASE_H

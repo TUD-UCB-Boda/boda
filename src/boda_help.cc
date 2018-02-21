@@ -7,36 +7,37 @@
 
 // TODO: move parts of boda.cc here ...
 
-namespace boda
-{
+namespace boda {
 #include"nesi_decls.H"
 
-  extern tinfo_t tinfo_has_main_t;
-  extern cinfo_t cinfo_has_main_t;
+    extern tinfo_t tinfo_has_main_t;
+    extern cinfo_t cinfo_has_main_t;
 
-  void nesi_struct_derived_modes( cinfo_t const * const ci, bool const show_all ) {
-    if( (!show_all) && ci->hide ) { return; } // skip if class is hidden. note: will ignore any derived classes as well.
-    if( ci->tid_str ) { printf( "%s ", ci->tid_str ); }
-    for( cinfo_t const * const * dci = ci->derived; *dci; ++dci ) { nesi_struct_derived_modes( *dci, show_all ); }
-  }
-
-  struct compsup_t : virtual public nesi, public has_main_t // NESI(help="completion support mode",
-			  // bases=["has_main_t"], type_id="compsup")
-  {
-    uint32_t show_all; //NESI(default=0,help="if true, show hidden modes")
-    vect_string pos_args; //NESI(help="current command line args")
-    virtual cinfo_t const * get_cinfo( void ) const; // required declaration for NESI support
-    virtual void main( nesi_init_arg_t * nia ) { 
-      if( pos_args.size() < 3 ) { // show modes
-	printf("-W\n");
-	nesi_struct_derived_modes( &cinfo_has_main_t, show_all ); 
-	printf("\n");
-	if( pos_args.size() > 1 ) { printf("--\n%s\n",str(pos_args[1]).c_str()); }
-      } else {
-	printf("-o\nfilenames\n-f\n");
-	printf("--\n%s\n",str(pos_args.back()).c_str());
-      }
+    void nesi_struct_derived_modes(cinfo_t const *const ci, bool const show_all) {
+        if ((!show_all) &&
+            ci->hide) { return; } // skip if class is hidden. note: will ignore any derived classes as well.
+        if (ci->tid_str) { printf("%s ", ci->tid_str); }
+        for (cinfo_t const *const *dci = ci->derived; *dci; ++dci) { nesi_struct_derived_modes(*dci, show_all); }
     }
-  };
+
+    struct compsup_t : virtual public nesi, public has_main_t // NESI(help="completion support mode",
+        // bases=["has_main_t"], type_id="compsup")
+    {
+        uint32_t show_all; //NESI(default=0,help="if true, show hidden modes")
+        vect_string pos_args; //NESI(help="current command line args")
+        virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
+        virtual void main(nesi_init_arg_t *nia) {
+            if (pos_args.size() < 3) { // show modes
+                printf("-W\n");
+                nesi_struct_derived_modes(&cinfo_has_main_t, show_all);
+                printf("\n");
+                if (pos_args.size() > 1) { printf("--\n%s\n", str(pos_args[1]).c_str()); }
+            } else {
+                printf("-o\nfilenames\n-f\n");
+                printf("--\n%s\n", str(pos_args.back()).c_str());
+            }
+        }
+    };
+
 #include"gen/boda_help.cc.nesi_gen.cc"
 }

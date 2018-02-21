@@ -4,30 +4,39 @@
 
 #include<string>
 
-namespace boda
-{
-  std::string pretty_format_nsecs( uint64_t const nsecs );
-  inline uint64_t secs_to_nsecs( double const & secs ) { return secs*1024.0*1024.0*1024.0; }
-  uint64_t secs_and_nsecs_to_nsecs( uint32_t const & secs, uint32_t const & nsecs );
-  uint64_t secs_and_nsecs_to_nsecs_signed( int32_t const & secs, int32_t const & nsecs ); // same as above, but does non-neg check
+namespace boda {
+    std::string pretty_format_nsecs(uint64_t const nsecs);
 
-  uint64_t get_cur_time( void );
-  struct timer_log_t;
-  extern timer_log_t global_timer_log; // for address only used in default below
-  void global_timer_log_finalize( void );
-  void global_timer_log_set_disable_finalize( bool const disable_finalize );
-  struct timer_t {
-    string tag; // name of timer
-    timer_log_t * tlog; // borrowed pointer, may be null
-    uint64_t bt; // start time 
-    bool ended; // true if stop() has been called
-    uint64_t et; // end time, valid only if ended
-    uint64_t dur; // (et-bt), valid only if ended
-    timer_t( string const & tag_, timer_log_t * const tlog_ = &global_timer_log );
-    uint64_t cur( void ) const;
-    void stop( void );
-    ~timer_t( void );
-  };
+    inline uint64_t secs_to_nsecs(double const &secs) { return secs * 1024.0 * 1024.0 * 1024.0; }
+
+    uint64_t secs_and_nsecs_to_nsecs(uint32_t const &secs, uint32_t const &nsecs);
+
+    uint64_t
+    secs_and_nsecs_to_nsecs_signed(int32_t const &secs, int32_t const &nsecs); // same as above, but does non-neg check
+
+    uint64_t get_cur_time(void);
+
+    struct timer_log_t;
+    extern timer_log_t global_timer_log; // for address only used in default below
+    void global_timer_log_finalize(void);
+
+    void global_timer_log_set_disable_finalize(bool const disable_finalize);
+
+    struct timer_t {
+        string tag; // name of timer
+        timer_log_t *tlog; // borrowed pointer, may be null
+        uint64_t bt; // start time
+        bool ended; // true if stop() has been called
+        uint64_t et; // end time, valid only if ended
+        uint64_t dur; // (et-bt), valid only if ended
+        timer_t(string const &tag_, timer_log_t *const tlog_ = &global_timer_log);
+
+        uint64_t cur(void) const;
+
+        void stop(void);
+
+        ~timer_t(void);
+    };
 
 }
 
