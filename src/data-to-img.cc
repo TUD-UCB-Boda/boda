@@ -7,9 +7,7 @@
 
 namespace boda {
 
-    struct data_to_img_raw_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="annotate data blocks (containing raw video frames) with image representations (in as_img field of data block). returns annotated data block.",
+    struct data_to_img_raw_t : virtual public nesi, public data_stream_t // NESI(help="annotate data blocks (containing raw video frames) with image representations (in as_img field of data block). returns annotated data block.",
         // bases=["data_stream_t"], type_id="add-img")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

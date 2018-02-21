@@ -83,9 +83,7 @@ namespace boda {
     // merged together, such that some set of non-primary topic messages (all near in time to the primary message) are
     // emitted. in particular, one case is that, for some secondary topics, all messages will be emitted exactly once,
     // attached to the primary topic message that they are closest to.
-    struct data_stream_rosbag_src_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="parse mxnet-brick-style-serialized data stream into data blocks",
+    struct data_stream_rosbag_src_t : virtual public nesi, public data_stream_t // NESI(help="parse mxnet-brick-style-serialized data stream into data blocks",
         // bases=["data_stream_t"], type_id="rosbag-src")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -368,9 +366,7 @@ namespace boda {
 
     float const meters_to_feet = 3.28084;
 
-    struct data_stream_rosbag_sink_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="parse mxnet-brick-style-serialized data stream into data blocks",
+    struct data_stream_rosbag_sink_t : virtual public nesi, public data_stream_t // NESI(help="parse mxnet-brick-style-serialized data stream into data blocks",
         // bases=["data_stream_t"], type_id="rosbag-sink")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

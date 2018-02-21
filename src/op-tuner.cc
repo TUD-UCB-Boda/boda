@@ -171,9 +171,7 @@ namespace boda {
     }
 
     // merge multiple wisdom files into one. note: output ops will be sorted by op, not by order in any input files.
-    struct wis_merge_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="analyses wisdom file, output data in format for plotting",
+    struct wis_merge_t : virtual public nesi, public has_main_t // NESI(help="analyses wisdom file, output data in format for plotting",
         // bases=["has_main_t"], type_id="wis-merge" )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -229,9 +227,7 @@ namespace boda {
 
     typedef vector<per_op_ana_t> vect_per_op_ana_t;
 
-    struct wis_ana_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="analyses wisdom file, output data in format for plotting",
+    struct wis_ana_t : virtual public nesi, public has_main_t // NESI(help="analyses wisdom file, output data in format for plotting",
         // bases=["has_main_t"], type_id="wis-ana" )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

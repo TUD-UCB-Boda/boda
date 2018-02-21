@@ -89,9 +89,7 @@ void main(){
 
 })xxx";
 
-    struct data_to_img_pts_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="annotate data blocks (containing point cloud data) with image representations (in as_img field of data block). returns annotated data block.",
+    struct data_to_img_pts_t : virtual public nesi, public data_stream_t // NESI(help="annotate data blocks (containing point cloud data) with image representations (in as_img field of data block). returns annotated data block.",
         // bases=["data_stream_t"], type_id="add-img-pts")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

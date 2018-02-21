@@ -140,9 +140,7 @@ namespace boda {
 
 namespace boda {
 
-    struct rtc_test_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="test basic usage of rtc", bases=["has_main_t"], type_id="rtc_test")
+    struct rtc_test_t : virtual public nesi, public has_main_t // NESI(help="test basic usage of rtc", bases=["has_main_t"], type_id="rtc_test")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t out_fn; //NESI(default="%(boda_output_dir)/rtc_test.txt",help="output: test results as error or 'all is well'.")

@@ -13,9 +13,7 @@ namespace boda {
 
     typedef map<int, p_rendered_char_t> rendered_char_cache_t;
 
-    struct ttf_font_render_t
-            : public virtual nesi,
-              public font_render_t // NESI(help="stb_truetype-based ttf-font-rendering to bitmaps", bases=["font_render_t"], type_id="ttf" )
+    struct ttf_font_render_t : public virtual nesi, public font_render_t // NESI(help="stb_truetype-based ttf-font-rendering to bitmaps", bases=["font_render_t"], type_id="ttf" )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t font_fn; //NESI(default="%(boda_dir)/fonts/DroidSansMono.ttf",help="ttf font filename")
@@ -116,9 +114,7 @@ namespace boda {
         }
     }
 
-    struct test_font_util_t
-            : public virtual nesi,
-              public has_main_t // NESI(help="test of stb_truetype/font-rendering", bases=["has_main_t"], type_id="test-font-util" )
+    struct test_font_util_t : public virtual nesi, public has_main_t // NESI(help="test of stb_truetype/font-rendering", bases=["has_main_t"], type_id="test-font-util" )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
 

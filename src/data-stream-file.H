@@ -8,9 +8,7 @@
 
 namespace boda {
 
-    struct data_stream_file_t
-            : virtual public nesi,
-              public data_stream_tagged_frames_t // NESI(help="parse serialized data stream from file into data blocks",
+    struct data_stream_file_t : virtual public nesi, public data_stream_tagged_frames_t // NESI(help="parse serialized data stream from file into data blocks",
         // bases=["data_stream_tagged_frames_t"], type_id="file-src", is_abstract=1)
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -29,9 +27,7 @@ namespace boda {
         }
     };
 
-    struct data_sink_file_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="base functionality to write stream of data blocks into file",
+    struct data_sink_file_t : virtual public nesi, public data_stream_t // NESI(help="base functionality to write stream of data blocks into file",
         // bases=["data_stream_t"], type_id="file-sink", is_abstract=1)
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

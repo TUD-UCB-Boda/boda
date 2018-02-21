@@ -70,9 +70,7 @@ namespace boda {
         return ret;
     }
 
-    struct data_stream_start_stop_skip_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="wrap another data stream and optionally: skip initial blocks and/or skip blocks after each returned block and/or limit the number of blocks returned.",
+    struct data_stream_start_stop_skip_t : virtual public nesi, public data_stream_t // NESI(help="wrap another data stream and optionally: skip initial blocks and/or skip blocks after each returned block and/or limit the number of blocks returned.",
         // bases=["data_stream_t"], type_id="start-stop-skip")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -119,9 +117,7 @@ namespace boda {
     };
 
     // overlap timestamp of one stream onto a stream that is missing timestamps. checks that frame_ix's are equal across streams.
-    struct data_stream_ts_merge_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="wrap one data and one timestamp stream and apply the timestamp stream timestamp to the data stream. will complain if data stream has a timestamp already of if frame_ix's don't agree across streams.",
+    struct data_stream_ts_merge_t : virtual public nesi, public data_stream_t // NESI(help="wrap one data and one timestamp stream and apply the timestamp stream timestamp to the data stream. will complain if data stream has a timestamp already of if frame_ix's don't agree across streams.",
         // bases=["data_stream_t"], type_id="ts-merge")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -174,9 +170,7 @@ namespace boda {
         }
     };
 
-    struct data_stream_qt_t
-            : virtual public nesi,
-              public data_stream_file_t // NESI(help="parse qt-style-serialized data stream into data blocks",
+    struct data_stream_qt_t : virtual public nesi, public data_stream_file_t // NESI(help="parse qt-style-serialized data stream into data blocks",
         // bases=["data_stream_file_t"], type_id="qt")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -253,9 +247,7 @@ namespace boda {
         }
     };
 
-    struct data_stream_dumpvideo_t
-            : virtual public nesi,
-              public data_stream_file_t // NESI(help="parse dumpvideo data stream into data blocks",
+    struct data_stream_dumpvideo_t : virtual public nesi, public data_stream_file_t // NESI(help="parse dumpvideo data stream into data blocks",
         // bases=["data_stream_file_t"], type_id="dumpvideo")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -275,9 +267,7 @@ namespace boda {
     };
 
     // parse stream from text file, one block per line, with a one-line header (which is currently ignored)
-    struct data_stream_text_t
-            : virtual public nesi,
-              public data_stream_file_t // NESI(help="parse text (line-oriented) stream into data blocks",
+    struct data_stream_text_t : virtual public nesi, public data_stream_file_t // NESI(help="parse text (line-oriented) stream into data blocks",
         // bases=["data_stream_file_t"], type_id="text-src")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -331,9 +321,7 @@ namespace boda {
     };
 
     // output stream to text file, one block per line, as hex, with no header
-    struct data_sink_text_t
-            : virtual public nesi,
-              public data_sink_file_t // NESI(help="output stream of data blocks as text (line-oriented)",
+    struct data_sink_text_t : virtual public nesi, public data_sink_file_t // NESI(help="output stream of data blocks as text (line-oriented)",
         // bases=["data_sink_file_t"], type_id="text-sink")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

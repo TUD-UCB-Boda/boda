@@ -474,9 +474,7 @@ namespace boda {
     }
 
 
-    struct score_results_file_t
-            : virtual public nesi,
-              public load_pil_t // NESI(help="score a pascal-VOC-format results file",bases=["load_pil_t"], type_id="score")
+    struct score_results_file_t : virtual public nesi, public load_pil_t // NESI(help="score a pascal-VOC-format results file",bases=["load_pil_t"], type_id="score")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t res_fn; //NESI(help="input: name of pascal-VOC format detection results file to read",req=1)
@@ -490,9 +488,7 @@ namespace boda {
         }
     };
 
-    struct score_results_files_t
-            : virtual public nesi,
-              public load_pil_t // NESI(help="score a set of pascal-VOC-format results files",bases=["load_pil_t"], type_id="score-files")
+    struct score_results_files_t : virtual public nesi, public load_pil_t // NESI(help="score a set of pascal-VOC-format results files",bases=["load_pil_t"], type_id="score-files")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t res_fn; //NESI(default="%(bench_dir)/results/%%s_test.txt",help="format for filenames of pascal-VOC format DPM detection results files. %%s will be replaced with the class name")
@@ -680,9 +676,7 @@ namespace boda {
     }
 
 
-    struct hamming_analysis_t
-            : virtual public nesi,
-              public load_pil_t // NESI(help="hamming first-level cascade boxes analysis",bases=["load_pil_t"], type_id="ham_ana")
+    struct hamming_analysis_t : virtual public nesi, public load_pil_t // NESI(help="hamming first-level cascade boxes analysis",bases=["load_pil_t"], type_id="ham_ana")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t ham_fn; //NESI(default="%(bench_dir)/hamming/voc-release5-hamming_top1000boxes/2007/%%s_boxes_test__hamming_imgNo%%s.csv",help="format for base filenames of hamming boxes. %%s, %%s will be replaced with the class name, img index")

@@ -512,9 +512,7 @@ namespace boda {
     }
 
 
-    struct cnet_ana_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="show info from caffe prototxt net. ",bases=["has_main_t"], type_id="cnet_ana")
+    struct cnet_ana_t : virtual public nesi, public has_main_t // NESI(help="show info from caffe prototxt net. ",bases=["has_main_t"], type_id="cnet_ana")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t ptt_fn; //NESI(default="%(models_dir)/%(in_model)/train_val.prototxt",help="input net prototxt template filename")

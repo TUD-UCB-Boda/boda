@@ -70,8 +70,7 @@ namespace boda {
     typedef vector<p_img_t> vect_p_img_t;
 
 
-    struct img_pyra_pack_t
-            : virtual public nesi, public pyra_pack_t // NESI(help="image pyramid packing", bases=["pyra_pack_t"])
+    struct img_pyra_pack_t : virtual public nesi, public pyra_pack_t // NESI(help="image pyramid packing", bases=["pyra_pack_t"])
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         // outputs

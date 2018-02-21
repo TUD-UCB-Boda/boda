@@ -7,9 +7,7 @@
 #include"font-util.H"
 
 namespace boda {
-    struct data_stream_img_add_text_t
-            : virtual public nesi,
-              public data_stream_t  // NESI(help="add text to image in data stream (modify in-place)",
+    struct data_stream_img_add_text_t : virtual public nesi, public data_stream_t  // NESI(help="add text to image in data stream (modify in-place)",
         // bases=["data_stream_t"], type_id="img-add-text")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

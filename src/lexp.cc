@@ -716,10 +716,7 @@ namespace boda {
             {"off_leaf_4_nested_esc_lp", "",                                                                    "(biz=bar=foo\\()",     0,                            0, {1, 1, 1}},
     };
 
-    struct lexp_test_run_t
-            : public test_run_t,
-              public virtual nesi,
-              public has_main_t // NESI(help="NESI wrapper for low-level lexp tests; use test_lexp() global func to run w/o NESI", bases=["has_main_t"], type_id="test_lexp", hide=1 )
+    struct lexp_test_run_t : public test_run_t, public virtual nesi, public has_main_t // NESI(help="NESI wrapper for low-level lexp tests; use test_lexp() global func to run w/o NESI", bases=["has_main_t"], type_id="test_lexp", hide=1 )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
 

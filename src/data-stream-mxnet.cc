@@ -24,9 +24,7 @@ namespace boda {
 
     uint32_t lrec_get_len(uint32_t const &lrec) { return (lrec << 3) >> 3; }
 
-    struct data_stream_mxnet_brick_t
-            : virtual public nesi,
-              public data_stream_file_t // NESI(help="parse mxnet-brick-style-serialized data stream into data blocks",
+    struct data_stream_mxnet_brick_t : virtual public nesi, public data_stream_file_t // NESI(help="parse mxnet-brick-style-serialized data stream into data blocks",
         // bases=["data_stream_file_t"], type_id="mxnet-brick-src")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -115,9 +113,7 @@ namespace boda {
     };
 
 
-    struct data_sink_mxnet_brick_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="write sequence of blocks (i.e. records) into mxnet brick.",
+    struct data_sink_mxnet_brick_t : virtual public nesi, public data_stream_t // NESI(help="write sequence of blocks (i.e. records) into mxnet brick.",
         // bases=["data_stream_t"],type_id="mxnet-brick-sink")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -229,9 +225,7 @@ namespace boda {
         virtual string get_pos_info_str(void) { return strprintf("tot_num_gen=%s", str(tot_num_gen).c_str()); }
     };
 
-    struct data_sink_hash_check_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="read sequence of block/prior-block-hash-block pairs.",
+    struct data_sink_hash_check_t : virtual public nesi, public data_stream_t // NESI(help="read sequence of block/prior-block-hash-block pairs.",
         // bases=["data_stream_t"],type_id="hash-check")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

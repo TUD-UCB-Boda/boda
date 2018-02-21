@@ -14,9 +14,7 @@ namespace boda {
 
     extern tinfo_t tinfo_p_has_main_t;
 
-    struct test_all_t
-            : public virtual nesi,
-              public has_main_t // NESI(help="run all tests in (by default) %(boda_test_dir)/test_all.xml", bases=["has_main_t"], type_id="test_all" )
+    struct test_all_t : public virtual nesi, public has_main_t // NESI(help="run all tests in (by default) %(boda_test_dir)/test_all.xml", bases=["has_main_t"], type_id="test_all" )
     {
         filename_t xml_fn; //NESI(default="%(boda_test_dir)/test_all.xml",help="xml file containing list of testing modes.")
         string filt; //NESI(default=".*",help="regexp over modes of what commands to run (default runs all)")

@@ -159,9 +159,7 @@ namespace boda {
     typedef map<string, ops_be_t> map_str_ops_be_t;
 
 
-    struct ops_prof_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="profile set of operations across backends and tuning params",
+    struct ops_prof_t : virtual public nesi, public has_main_t // NESI(help="profile set of operations across backends and tuning params",
         // bases=["has_main_t"], type_id="ops-prof" )
 
     {

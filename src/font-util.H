@@ -17,8 +17,7 @@ namespace boda {
     };
     typedef shared_ptr<rendered_char_t> p_rendered_char_t;
 
-    struct font_render_t
-            : virtual public nesi // NESI(help="modes that can be used for rendering fonts",is_abstract=1,tid_vn="be")
+    struct font_render_t : virtual public nesi // NESI(help="modes that can be used for rendering fonts",is_abstract=1,tid_vn="be")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         string be; //NESI(req=1,help="name of back-end to use for font rendering")

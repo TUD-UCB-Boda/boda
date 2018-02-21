@@ -351,9 +351,7 @@ moskewcz@maaya:~/git_work/boda/run/tr4$ boda cs_test_worker --boda-parent-addr=f
 
  */
 
-    struct cs_test_master_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="cs-testing master/server", bases=["has_main_t"], type_id="cs_test_master")
+    struct cs_test_master_t : virtual public nesi, public has_main_t // NESI(help="cs-testing master/server", bases=["has_main_t"], type_id="cs_test_master")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         string boda_parent_addr; //NESI(default="tcp:localhost:12791", help="address to use for communication."
@@ -377,9 +375,7 @@ moskewcz@maaya:~/git_work/boda/run/tr4$ boda cs_test_worker --boda-parent-addr=f
     };
 
     // note: this mode prints to stderr (always) to allow the fds mode testing to work (where stdin/stdout are used for IPC)
-    struct cs_test_worker_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="cs-testing worker/client", bases=["has_main_t"], type_id="cs_test_worker")
+    struct cs_test_worker_t : virtual public nesi, public has_main_t // NESI(help="cs-testing worker/client", bases=["has_main_t"], type_id="cs_test_worker")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         string boda_parent_addr; //NESI(help="address of boda parent process in boda format",req=1)
@@ -400,9 +396,7 @@ moskewcz@maaya:~/git_work/boda/run/tr4$ boda cs_test_worker --boda-parent-addr=f
         }
     };
 
-    struct ipc_compute_worker_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="rtc-over-IPC worker/client", bases=["has_main_t"], type_id="ipc_compute_worker")
+    struct ipc_compute_worker_t : virtual public nesi, public has_main_t // NESI(help="rtc-over-IPC worker/client", bases=["has_main_t"], type_id="ipc_compute_worker")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         p_rtc_compute_t rtc; //NESI(default="(be=nvrtc)",help="rtc back-end to use")

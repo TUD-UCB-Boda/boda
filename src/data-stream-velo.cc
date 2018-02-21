@@ -106,9 +106,7 @@ namespace boda {
     // is only present for 64 laser sensors -- 32 laser sensors use [0] as the id for every firing block.
     uint32_t laser_block_ids[2] = {0xeeff, 0xddff};
 
-    struct data_stream_velodyne_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="parse data stream (velodyne) into per-full-revolution data blocks by merging across packets",
+    struct data_stream_velodyne_t : virtual public nesi, public data_stream_t // NESI(help="parse data stream (velodyne) into per-full-revolution data blocks by merging across packets",
         // bases=["data_stream_t"], type_id="velodyne")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -785,9 +783,7 @@ namespace boda {
         status_info_t si;
     } __attribute__((packed));
 
-    struct data_stream_velodyne_gen_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="convert dense point cloud data blocks into sequences of velodyne udp packet payloads",
+    struct data_stream_velodyne_gen_t : virtual public nesi, public data_stream_t // NESI(help="convert dense point cloud data blocks into sequences of velodyne udp packet payloads",
         // bases=["data_stream_t"], type_id="velodyne-gen")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
@@ -1009,9 +1005,7 @@ namespace boda {
     // for HDL64, normal (10HZ) single-return should be 0.1729106628
     // for HDL64, normal (10HZ) dual-return should be ~0.21 (27 18 18 27 18 18 27 18 18 18 27 18 18 ...)
 
-    struct velo_pcdm_to_xyz_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="annotate data blocks (containing point cloud data) with image representations (in as_img field of data block). returns annotated data block.",
+    struct velo_pcdm_to_xyz_t : virtual public nesi, public data_stream_t // NESI(help="annotate data blocks (containing point cloud data) with image representations (in as_img field of data block). returns annotated data block.",
         // bases=["data_stream_t"], type_id="velo-pcdm-to-xyz")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

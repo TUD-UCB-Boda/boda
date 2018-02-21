@@ -142,9 +142,7 @@ namespace boda {
 #endif
     }
 
-    struct test_oct_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="run simple octave interface test",bases=["has_main_t"], type_id="test_oct", hide=1 )
+    struct test_oct_t : virtual public nesi, public has_main_t // NESI(help="run simple octave interface test",bases=["has_main_t"], type_id="test_oct", hide=1 )
     {
         filename_t mat_fn; //NESI(default="%(boda_test_dir)/oct_test/car_final_cascade.mat",help="in matrix fn")
         filename_t out_fn; //NESI(default="%(boda_output_dir)/out.txt",help="output filename")
@@ -226,9 +224,7 @@ namespace boda {
         }
     }
 
-    struct oct_dfc_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="run dpm fast cascade over a single image file",bases=["has_main_t"], type_id="oct_dfc")
+    struct oct_dfc_t : virtual public nesi, public has_main_t // NESI(help="run dpm fast cascade over a single image file",bases=["has_main_t"], type_id="oct_dfc")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         string image_fn; //NESI(help="input: image filename",req=1)
@@ -247,9 +243,7 @@ namespace boda {
     // for cn in `cat ../../test/pascal_classes.txt`; do ../../lib/boda score --pil-fn=%(pascal_data_dir)/ImageSets/Main/${cn}_test.txt --res-fn=${cn}_hamming.txt --class-name=${cn}; done
     // for cn in `cat ../test/pascal_classes.txt`; do ../lib/boda mat_bs_to_pascal --mat-bs-fn=/home/moskewcz/bench/hamming/hamming_toplevel_bboxes_pascal2007/${cn}_boxes_test__hamming.mat --res-fn=${cn}_hamming.txt --class-name=${cn} --pil-fn=%(pascal_data_dir)/ImageSets/Main/${cn}_test.txt ; done
 
-    struct convert_matlab_res_t
-            : virtual public nesi,
-              public load_pil_t // NESI(help="convert matlab 'ds' results to pascal format",bases=["load_pil_t"], type_id="mat_bs_to_pascal")
+    struct convert_matlab_res_t : virtual public nesi, public load_pil_t // NESI(help="convert matlab 'ds' results to pascal format",bases=["load_pil_t"], type_id="mat_bs_to_pascal")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t mat_bs_fn; //NESI(default="%(bench_dir)/hamming/voc-release5_simpleHog_no_sqrt_11-27-13/2007/%%s_boxes_test_simpleHog.mat", help="input: format for filenames of matlab file with ds var with results: %%s will be replaced with the class name")
@@ -515,9 +509,7 @@ namespace boda {
         return scales_out;
     }
 
-    struct proc_img_file_list_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="process a list of image files to produce an output text file",bases=["has_main_t"], is_abstract=1)
+    struct proc_img_file_list_t : virtual public nesi, public has_main_t // NESI(help="process a list of image files to produce an output text file",bases=["has_main_t"], is_abstract=1)
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         filename_t image_list_fn; //NESI(help="input: text list of image filenames, one per line",req=1)
@@ -537,9 +529,7 @@ namespace boda {
         virtual void proc_img(ostream &out, string const &img_fn) = 0;
     };
 
-    struct oct_resize_t
-            : virtual public nesi,
-              public proc_img_file_list_t // NESI(help="compare resize using boda versus octave",bases=["proc_img_file_list_t"], type_id="oct_resize")
+    struct oct_resize_t : virtual public nesi, public proc_img_file_list_t // NESI(help="compare resize using boda versus octave",bases=["proc_img_file_list_t"], type_id="oct_resize")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         uint32_t write_images; //NESI(default=0,help="write out octave and boda resized images?")
@@ -594,9 +584,7 @@ namespace boda {
     };
 
 
-    struct oct_featpyra_t
-            : virtual public nesi,
-              public proc_img_file_list_t // NESI(help="compare HOG pyramid generated using boda versus octave",bases=["proc_img_file_list_t"], type_id="oct_featpyra")
+    struct oct_featpyra_t : virtual public nesi, public proc_img_file_list_t // NESI(help="compare HOG pyramid generated using boda versus octave",bases=["proc_img_file_list_t"], type_id="oct_featpyra")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         virtual void proc_img(ostream &out, string const &img_fn) {

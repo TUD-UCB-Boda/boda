@@ -36,10 +36,7 @@ namespace boda {
     vect_string bb_lc_strs = {"12.0", "234", "-1234", "sdfsd", "12s", "123e45", "0.0123e-12"};
 
 
-    struct boda_base_test_run_t
-            : public test_run_t,
-              public virtual nesi,
-              public has_main_t // NESI(help="NESI wrapper for low-level boda tests; use test_boda_base() global func to run w/o NESI", bases=["has_main_t"], type_id="test_boda_base", hide=1 )
+    struct boda_base_test_run_t : public test_run_t, public virtual nesi, public has_main_t // NESI(help="NESI wrapper for low-level boda tests; use test_boda_base() global func to run w/o NESI", bases=["has_main_t"], type_id="test_boda_base", hide=1 )
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
 

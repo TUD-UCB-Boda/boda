@@ -129,9 +129,7 @@ namespace boda {
     typedef vector<p_data_stream_t> vect_p_data_stream_t;
 
 
-    struct data_stream_tagged_frames_t
-            : virtual public nesi,
-              public data_stream_t // NESI(help="parse serialized data stream from file into data blocks",
+    struct data_stream_tagged_frames_t : virtual public nesi, public data_stream_t // NESI(help="parse serialized data stream from file into data blocks",
         // bases=["data_stream_t"], type_id="tagged-frames-src", is_abstract=1)
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support

@@ -334,9 +334,7 @@ namespace boda {
         }
     }
 
-    struct ds_test_t
-            : virtual public nesi,
-              public has_main_t // NESI(help="run image downsampling test on a single image file",bases=["has_main_t"], type_id="ds_test")
+    struct ds_test_t : virtual public nesi, public has_main_t // NESI(help="run image downsampling test on a single image file",bases=["has_main_t"], type_id="ds_test")
     {
         virtual cinfo_t const *get_cinfo(void) const; // required declaration for NESI support
         string image_fn; //NESI(help="input: image filename",req=1)
